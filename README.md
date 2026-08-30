@@ -15,6 +15,10 @@ make up
 ```
 
 ### 🛠️ Handy Makefile Commands:
+* `make setup-local` - Install all dependencies (Python + npm), copy `.env`, and seed 10k records
+* `make migrate` - Apply all pending Alembic database migrations (`alembic upgrade head`)
+* `make migrate-generate m='msg'` - Autogenerate a new Alembic migration schema revision
+* `make migrate-downgrade` - Roll back the latest migration
 * `make up` - Build and start all services (PostgreSQL, Backend, Frontend) in foreground
 * `make up-d` - Start all services in the background
 * `make down` - Stop all services
