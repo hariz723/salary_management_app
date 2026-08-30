@@ -1,6 +1,6 @@
-# ACME Employee Salary Management System (10,000 Employees)
+# Employee Salary Management System
 
-An enterprise-grade compensation intelligence and salary management platform built for **ACME Corporation's HR Manager** to manage, analyze, adjust, and govern compensation data for **10,000 employees** across 8 countries and currencies with sub-50ms responsiveness.
+An enterprise-grade compensation intelligence and salary management platform built for **Corporation's HR Manager** to manage, analyze, adjust, and govern compensation data for **10,000 employees** across 8 countries and currencies with sub-50ms responsiveness.
 
 ---
 
