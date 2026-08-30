@@ -1,7 +1,8 @@
 
-from app.models.audit_log import SalaryAuditLog
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
+
+from app.models.audit_log import SalaryAuditLog
 
 
 class AuditLogRepository:

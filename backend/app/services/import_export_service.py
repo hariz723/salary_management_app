@@ -4,6 +4,8 @@ import uuid
 from datetime import date
 from typing import Any
 
+from sqlalchemy.orm import Session
+
 from app.models.audit_log import SalaryAuditLog
 from app.models.employee import Employee
 from app.models.salary import SalaryRecord
@@ -17,7 +19,6 @@ from app.services.metadata_service import (
     COUNTRIES_DATA,
     get_band_for,
 )
-from sqlalchemy.orm import Session
 
 
 def export_employees_csv(db: Session) -> str:
@@ -75,7 +76,7 @@ def import_employees_csv(db: Session, csv_text: str) -> dict[str, Any]:
     reader = csv.DictReader(f)
 
     required_fields = ["first_name", "last_name", "email", "country", "department", "job_title", "job_level", "base_salary"]
-    
+
     total_rows = 0
     imported_count = 0
     errors: list[dict[str, Any]] = []

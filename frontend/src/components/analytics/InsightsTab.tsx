@@ -5,22 +5,18 @@ import { useCurrency } from '../../context/CurrencyContext';
 import {
   HelpCircle,
   Sparkles,
-  ChevronRight,
-  TrendingUp,
   ShieldCheck,
   Building2,
   Globe2,
   Users,
   Award,
 } from 'lucide-react';
-import { Card, Tag, Spin, Collapse } from 'antd';
-
-const { Panel } = Collapse;
+import { Tag, Spin } from 'antd';
 
 export const InsightsTab: React.FC = () => {
   const [questions, setQuestions] = useState<HRQuestionCard[]>([]);
   const [loading, setLoading] = useState(true);
-  const { formatMoney, selectedCurrency } = useCurrency();
+  const { formatMoney } = useCurrency();
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -65,7 +61,6 @@ export const InsightsTab: React.FC = () => {
 
   return (
     <div className="space-y-6 pb-12">
-      {/* Header Banner */}
       <div className="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 p-6 rounded-2xl text-white shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center space-x-2">
@@ -81,7 +76,6 @@ export const InsightsTab: React.FC = () => {
         </div>
       </div>
 
-      {/* Question Cards Grid */}
       <div className="space-y-4">
         {questions.map((q, idx) => (
           <div
@@ -109,7 +103,6 @@ export const InsightsTab: React.FC = () => {
                 </div>
               </div>
 
-              {/* Dynamic Deep-Dive Visuals based on Question ID */}
               {q.id === 'q1_gender_parity' && q.detailed_data?.departments && (
                 <div className="mt-5 pt-4 border-t border-slate-100">
                   <div className="text-xs font-bold text-slate-700 mb-2">Department Gender Pay Parity Ratio (Female / Male)</div>

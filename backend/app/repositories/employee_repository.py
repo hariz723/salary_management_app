@@ -1,8 +1,9 @@
 
-from app.models.employee import Employee
-from app.models.salary import SalaryRecord
 from sqlalchemy import and_, asc, desc, or_
 from sqlalchemy.orm import Session
+
+from app.models.employee import Employee
+from app.models.salary import SalaryRecord
 
 
 class EmployeeRepository:
@@ -19,7 +20,7 @@ class EmployeeRepository:
         return self.db.query(Employee).count()
 
     def get_existing_emails(self) -> set:
-        return set(e[0] for e in self.db.query(Employee.email).all())
+        return {e[0] for e in self.db.query(Employee.email).all()}
 
     def get_paginated_with_current_salary(
         self,

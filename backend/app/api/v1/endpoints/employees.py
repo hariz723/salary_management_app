@@ -1,4 +1,7 @@
 
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy.orm import Session
+
 from app.core.database import get_db
 from app.schemas.employee import (
     EmployeeCreate,
@@ -6,8 +9,6 @@ from app.schemas.employee import (
     PaginatedEmployeeResponse,
 )
 from app.services import employee_service
-from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy.orm import Session
 
 router = APIRouter()
 

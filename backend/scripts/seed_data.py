@@ -1,24 +1,32 @@
-import sys
 import os
-import uuid
 import random
+import sys
 import time
+import uuid
 from datetime import date, datetime, timedelta
+
 import numpy as np
 from faker import Faker
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from app.core.database import engine, SessionLocal, Base
-from app.models.employee import Employee
-from app.models.salary import SalaryRecord, SalaryBand, ExchangeRate
-from app.models.audit_log import SalaryAuditLog
-from app.models.user import User
-from app.repositories import EmployeeRepository, SalaryRepository, AuditLogRepository, UserRepository
+from app.core.database import Base, SessionLocal, engine
 from app.core.security import hash_password
+from app.models.audit_log import SalaryAuditLog
+from app.models.employee import Employee
+from app.models.salary import ExchangeRate, SalaryBand, SalaryRecord
+from app.models.user import User
+from app.repositories import (
+    AuditLogRepository,
+    EmployeeRepository,
+    SalaryRepository,
+)
 from app.services.metadata_service import (
-    COUNTRIES_DATA, DEPARTMENTS, JOB_LEVELS, JOB_TITLES,
-    get_band_for
+    COUNTRIES_DATA,
+    DEPARTMENTS,
+    JOB_LEVELS,
+    JOB_TITLES,
+    get_band_for,
 )
 
 random.seed(42)
@@ -164,7 +172,7 @@ def generate_10k_employees(db, total_count=10000):
     c_weights = [COUNTRY_WEIGHTS[c] for c in countries]
 
     levels = list(LEVEL_WEIGHTS.keys())
-    l_weights = [LEVEL_WEIGHTS[l] for l in levels]
+    l_weights = [LEVEL_WEIGHTS[lvl] for lvl in levels]
 
     genders = ["Female", "Male", "Non-Binary"]
     g_weights = [0.46, 0.48, 0.06]

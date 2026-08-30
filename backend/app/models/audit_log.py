@@ -1,8 +1,11 @@
 import uuid
 from datetime import datetime
-from sqlalchemy import Column, String, Float, DateTime, ForeignKey, Text, Index
+
+from sqlalchemy import Column, DateTime, Float, ForeignKey, Index, String, Text
 from sqlalchemy.orm import relationship
+
 from app.core.database import Base
+
 
 class SalaryAuditLog(Base):
     __tablename__ = "salary_audit_logs"

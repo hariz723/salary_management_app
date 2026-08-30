@@ -1,5 +1,7 @@
+from typing import Any
+
 from pydantic import BaseModel
-from typing import List, Dict, Any, Optional
+
 
 class OverviewStats(BaseModel):
     total_employees: int
@@ -81,8 +83,8 @@ class GenderDepartmentGap(BaseModel):
     female_to_male_ratio: float           # female / male
 
 class GenderPayGapAnalysis(BaseModel):
-    overall_by_gender: List[GenderGroupStats]
-    department_breakdown: List[GenderDepartmentGap]
+    overall_by_gender: list[GenderGroupStats]
+    department_breakdown: list[GenderDepartmentGap]
     overall_female_to_male_ratio: float
     overall_gap_percentage: float
 
@@ -108,11 +110,11 @@ class BandComplianceSummary(BaseModel):
     overpaid_count: int
     compliance_rate_percentage: float
     cost_to_bring_to_minimum_usd: float
-    top_outliers: List[OutlierEmployee]
+    top_outliers: list[OutlierEmployee]
 
 class HRQuestionCard(BaseModel):
     id: str
     question: str
     category: str
     summary_answer: str
-    detailed_data: Dict[str, Any]
+    detailed_data: dict[str, Any]

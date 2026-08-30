@@ -8,9 +8,7 @@ import {
   HelpCircle,
   Scale,
   LogOut,
-  User as UserIcon,
   Globe2,
-  ShieldCheck,
 } from 'lucide-react';
 import { Select, Tag, Tooltip } from 'antd';
 
@@ -21,7 +19,7 @@ interface NavbarProps {
 
 export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
   const { user, logout } = useAuth();
-  const { selectedCurrency, setSelectedCurrency, currencies } = useCurrency();
+  const { selectedCurrency, setSelectedCurrency } = useCurrency();
 
   const navItems = [
     { id: 'overview', label: 'Executive Overview', icon: BarChart3 },
@@ -45,7 +43,6 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
     <header className="sticky top-0 z-40 bg-white border-b border-slate-200 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Logo & Org branding */}
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
               <DollarSign className="w-6 h-6" />
@@ -61,7 +58,6 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
             </div>
           </div>
 
-          {/* Navigation Tabs */}
           <nav className="hidden md:flex space-x-1">
             {navItems.map((item) => {
               const Icon = item.icon;
@@ -83,7 +79,6 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
             })}
           </nav>
 
-          {/* Right Controls: Currency Switcher & User Profile */}
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-1.5 bg-slate-100 rounded-lg p-1">
               <Globe2 className="w-4 h-4 text-slate-500 ml-1.5" />
@@ -119,7 +114,6 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
         </div>
       </div>
 
-      {/* Mobile Sub-Navigation */}
       <div className="md:hidden flex overflow-x-auto border-t border-slate-200 px-4 py-2 space-x-2 bg-slate-50">
         {navItems.map((item) => {
           const Icon = item.icon;

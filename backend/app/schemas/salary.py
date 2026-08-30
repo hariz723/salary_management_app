@@ -1,6 +1,7 @@
-from pydantic import BaseModel, Field
 from datetime import date, datetime
-from typing import Optional
+
+from pydantic import BaseModel, Field
+
 
 class SalaryRecordBase(BaseModel):
     base_salary: float = Field(..., gt=0, description="Base salary in local currency")
@@ -24,12 +25,12 @@ class SalaryRecordOut(SalaryRecordBase):
 
 class SalaryAdjustmentCreate(BaseModel):
     new_base_salary: float = Field(..., gt=0, description="New base salary in local currency")
-    new_bonus_percentage: Optional[float] = Field(default=None, ge=0.0, le=200.0)
-    new_equity_usd: Optional[float] = Field(default=None, ge=0.0)
+    new_bonus_percentage: float | None = Field(default=None, ge=0.0, le=200.0)
+    new_equity_usd: float | None = Field(default=None, ge=0.0)
     change_type: str = Field(default="ADJUSTMENT", description="ADJUSTMENT, PROMOTION, ANNUAL_REVIEW, CORRECTION")
     reason: str = Field(..., min_length=3, max_length=255, description="Mandatory business reason for adjustment")
-    notes: Optional[str] = None
-    effective_date: Optional[date] = Field(default_factory=date.today)
+    notes: str | None = None
+    effective_date: date | None = Field(default_factory=date.today)
     changed_by: str = Field(default="HR Manager")
 
 class SalaryBandOut(BaseModel):

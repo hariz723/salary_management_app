@@ -1,10 +1,11 @@
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+
 from app.core.database import get_db
 from app.repositories.salary_repository import SalaryRepository
 from app.schemas.metadata import MetadataResponse
 from app.schemas.salary import ExchangeRateOut, SalaryBandOut
 from app.services.metadata_service import get_static_metadata
-from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
 
 router = APIRouter()
 

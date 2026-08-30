@@ -5,12 +5,7 @@ import { useCurrency } from '../../context/CurrencyContext';
 import { SalaryAdjustModal } from '../directory/SalaryAdjustModal';
 import {
   Scale,
-  ShieldCheck,
   AlertTriangle,
-  Users,
-  DollarSign,
-  TrendingUp,
-  ArrowRight,
   Edit3,
 } from 'lucide-react';
 import {
@@ -23,7 +18,7 @@ import {
   CartesianGrid,
   Legend,
 } from 'recharts';
-import { Tag, Spin, Table, Progress, Button } from 'antd';
+import { Tag, Spin, Table } from 'antd';
 
 export const PayParityTab: React.FC = () => {
   const { formatMoney, convertFromUsd, selectedCurrency } = useCurrency();
@@ -143,7 +138,6 @@ export const PayParityTab: React.FC = () => {
 
   return (
     <div className="space-y-6 pb-12">
-      {/* Top Banner */}
       <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 p-6 rounded-2xl text-white shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center space-x-2">
@@ -158,7 +152,6 @@ export const PayParityTab: React.FC = () => {
         </div>
       </div>
 
-      {/* Parity KPI Summary */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
           <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Overall Gender Parity Ratio</div>
@@ -202,7 +195,6 @@ export const PayParityTab: React.FC = () => {
         </div>
       </div>
 
-      {/* Gender Comparison Chart */}
       <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
         <div className="flex items-center justify-between mb-4">
           <div>
@@ -251,7 +243,6 @@ export const PayParityTab: React.FC = () => {
         </div>
       </div>
 
-      {/* Top 50 Compensation Band Outliers Table */}
       <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
         <div className="p-5 border-b border-slate-100 flex items-center justify-between">
           <div>
@@ -277,7 +268,6 @@ export const PayParityTab: React.FC = () => {
         />
       </div>
 
-      {/* Rectify Outlier Modal */}
       {adjustOutlier && (
         <SalaryAdjustModal
           visible={!!adjustOutlier}

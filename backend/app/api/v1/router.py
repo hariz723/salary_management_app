@@ -1,5 +1,6 @@
 from fastapi import APIRouter
-from app.api.v1.endpoints import employees, salaries, analytics, metadata, import_export, auth
+
+from app.api.v1.endpoints import analytics, auth, employees, import_export, metadata, salaries
 
 api_router = APIRouter()
 

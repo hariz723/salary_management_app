@@ -1,9 +1,10 @@
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.orm import Session
+
 from app.core.database import get_db
 from app.schemas.employee import EmployeeDetail
 from app.schemas.salary import SalaryAdjustmentCreate
 from app.services import salary_service
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
 
 router = APIRouter()
 

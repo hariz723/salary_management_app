@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Modal, Upload, Button, message, Alert, Table, Tag } from 'antd';
+import { Modal, Upload, message, Tag } from 'antd';
 import { importCsv } from '../../services/api';
-import { UploadCloud, FileText, Download, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { UploadCloud, Download, AlertTriangle } from 'lucide-react';
 
 const { Dragger } = Upload;
 

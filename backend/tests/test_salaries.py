@@ -1,4 +1,3 @@
-import pytest
 
 def test_salary_adjustment(client, seeded_db):
     list_resp = client.get("/api/v1/employees?page=1&page_size=1")

@@ -18,14 +18,11 @@ import {
   DollarSign,
   Users,
   TrendingUp,
-  Award,
   ShieldCheck,
   Globe2,
   Building2,
-  PieChart as PieIcon,
   BarChart3,
   ArrowUpRight,
-  AlertTriangle,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -35,16 +32,8 @@ import {
   YAxis,
   Tooltip as RechartsTooltip,
   CartesianGrid,
-  PieChart,
-  Pie,
-  Cell,
-  Legend,
-  Line,
-  ComposedChart,
 } from 'recharts';
-import { Card, Spin, Tag, Progress } from 'antd';
-
-const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#06b6d4', '#6366f1', '#14b8a6'];
+import { Spin, Tag } from 'antd';
 
 interface OverviewTabProps {
   onNavigateToDirectory: (filter?: { department?: string; country?: string; band_status?: string }) => void;
@@ -103,7 +92,6 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ onNavigateToDirectory 
 
   return (
     <div className="space-y-6 pb-12">
-      {/* Header & Subtitle */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-slate-900 to-indigo-950 p-6 rounded-2xl text-white shadow-xl">
         <div>
           <div className="flex items-center space-x-2">
@@ -131,9 +119,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ onNavigateToDirectory 
         </div>
       </div>
 
-      {/* KPI Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Card 1: Total Annual Payroll */}
         <div className="bg-white p-5 rounded-xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Annual Payroll</span>
@@ -151,7 +137,6 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ onNavigateToDirectory 
           </div>
         </div>
 
-        {/* Card 2: Headcount */}
         <div className="bg-white p-5 rounded-xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Headcount</span>
@@ -171,7 +156,6 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ onNavigateToDirectory 
           </div>
         </div>
 
-        {/* Card 3: Median Base & Mean */}
         <div className="bg-white p-5 rounded-xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Median Base Pay</span>
@@ -189,7 +173,6 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ onNavigateToDirectory 
           </div>
         </div>
 
-        {/* Card 4: Band Compliance */}
         <div
           onClick={() => onNavigateToDirectory({ band_status: 'UNDERPAID' })}
           className="bg-white p-5 rounded-xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow cursor-pointer group"
@@ -218,9 +201,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ onNavigateToDirectory 
         </div>
       </div>
 
-      {/* Row 2 Charts: Pay Distribution & Department Breakdown */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Pay Distribution Chart */}
         <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -245,7 +226,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ onNavigateToDirectory 
                 />
                 <YAxis tick={{ fontSize: 11, fill: '#64748b' }} />
                 <RechartsTooltip
-                  formatter={(value: any, name: any, props: any) => [
+                  formatter={(value: any, _name: any, props: any) => [
                     `${value.toLocaleString()} employees (${props.payload.percentage}%)`,
                     'Count',
                   ]}
@@ -263,7 +244,6 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ onNavigateToDirectory 
           </div>
         </div>
 
-        {/* Department Breakdown Chart */}
         <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -311,9 +291,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ onNavigateToDirectory 
         </div>
       </div>
 
-      {/* Row 3: Global Country Payroll & Job Level Seniority Progression */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Country Breakdown Table */}
         <div className="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -365,7 +343,6 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ onNavigateToDirectory 
           </div>
         </div>
 
-        {/* Job Seniority Curve */}
         <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
           <div>
             <h3 className="font-bold text-slate-900 text-base flex items-center space-x-2 mb-1">

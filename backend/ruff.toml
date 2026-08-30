@@ -1,4 +1,3 @@
-# Ruff configuration for ACME Salary Management Backend
 target-version = "py313"
 line-length = 100
 
@@ -14,8 +13,9 @@ select = [
 ]
 ignore = [
     "E501",  # Line length handled by formatter
-    "B008",  # Do not perform function call in argument defaults (FastAPI Depends)
-    "B904",  # raise ... from err (optional in simple handlers)
+    "E712",  # Allow SQLAlchemy comparison '== True'
+    "B008",  # FastAPI Depends
+    "B904",  # raise from err
 ]
 
 [lint.isort]

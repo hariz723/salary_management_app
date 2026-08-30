@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { Modal, Form, InputNumber, Select, Input, DatePicker, message, Alert } from 'antd';
 import { adjustSalary } from '../../services/api';
 import { EmployeeListItem, EmployeeDetail } from '../../types';
-import { useCurrency } from '../../context/CurrencyContext';
-import { DollarSign, ShieldAlert, Sparkles, History } from 'lucide-react';
+import { DollarSign } from 'lucide-react';
 import dayjs from 'dayjs';
 
 interface SalaryAdjustModalProps {
@@ -22,7 +21,6 @@ export const SalaryAdjustModal: React.FC<SalaryAdjustModalProps> = ({
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const { formatMoney } = useCurrency();
 
   if (!employee) return null;
 

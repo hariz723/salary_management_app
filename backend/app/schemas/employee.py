@@ -1,8 +1,10 @@
-from pydantic import BaseModel, EmailStr, Field
 from datetime import date, datetime
-from typing import Optional, List
-from app.schemas.salary import SalaryRecordOut, SalaryRecordBase
+
+from pydantic import BaseModel, EmailStr, Field
+
 from app.schemas.audit_log import SalaryAuditLogOut
+from app.schemas.salary import SalaryRecordBase, SalaryRecordOut
+
 
 class EmployeeBase(BaseModel):
     first_name: str = Field(..., min_length=1, max_length=50)
@@ -23,18 +25,18 @@ class EmployeeCreate(EmployeeBase):
     initial_salary: SalaryRecordBase
 
 class EmployeeUpdate(BaseModel):
-    first_name: Optional[str] = None
-    last_name: Optional[str] = None
-    email: Optional[EmailStr] = None
-    gender: Optional[str] = None
-    country: Optional[str] = None
-    country_code: Optional[str] = None
-    city: Optional[str] = None
-    department: Optional[str] = None
-    job_title: Optional[str] = None
-    job_level: Optional[str] = None
-    performance_rating: Optional[float] = None
-    is_active: Optional[bool] = None
+    first_name: str | None = None
+    last_name: str | None = None
+    email: EmailStr | None = None
+    gender: str | None = None
+    country: str | None = None
+    country_code: str | None = None
+    city: str | None = None
+    department: str | None = None
+    job_title: str | None = None
+    job_level: str | None = None
+    performance_rating: float | None = None
+    is_active: bool | None = None
 
 class EmployeeListItem(BaseModel):
     id: str
@@ -60,7 +62,7 @@ class EmployeeListItem(BaseModel):
     currency: str
     base_salary_usd: float
     total_compensation_usd: float
-    band_status: Optional[str] = "WITHIN_BAND"  # WITHIN_BAND, UNDERPAID, OVERPAID
+    band_status: str | None = "WITHIN_BAND"  # WITHIN_BAND, UNDERPAID, OVERPAID
 
     class Config:
         from_attributes = True
@@ -84,19 +86,19 @@ class EmployeeDetail(BaseModel):
     is_active: bool
     created_at: datetime
     updated_at: datetime
-    current_salary: Optional[SalaryRecordOut] = None
-    salary_history: List[SalaryRecordOut] = []
-    audit_logs: List[SalaryAuditLogOut] = []
-    band_status: Optional[str] = "WITHIN_BAND"
-    band_min_usd: Optional[float] = None
-    band_mid_usd: Optional[float] = None
-    band_max_usd: Optional[float] = None
+    current_salary: SalaryRecordOut | None = None
+    salary_history: list[SalaryRecordOut] = []
+    audit_logs: list[SalaryAuditLogOut] = []
+    band_status: str | None = "WITHIN_BAND"
+    band_min_usd: float | None = None
+    band_mid_usd: float | None = None
+    band_max_usd: float | None = None
 
     class Config:
         from_attributes = True
 
 class PaginatedEmployeeResponse(BaseModel):
-    items: List[EmployeeListItem]
+    items: list[EmployeeListItem]
     total: int
     page: int
     page_size: int

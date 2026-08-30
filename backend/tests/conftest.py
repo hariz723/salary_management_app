@@ -1,17 +1,17 @@
-import pytest
 import os
 import sys
+
+import pytest
+from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from fastapi.testclient import TestClient
 
 # Add backend directory to sys.path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.core.database import Base, get_db
 from app.main import app
-from app.models import Employee, SalaryRecord, SalaryBand, ExchangeRate, SalaryAuditLog
-from app.scripts.seed_data import seed_exchange_rates, seed_salary_bands, generate_10k_employees
+from app.scripts.seed_data import generate_10k_employees, seed_exchange_rates, seed_salary_bands
 
 TEST_DATABASE_URL = "sqlite:///./test_salary_app.db"
 

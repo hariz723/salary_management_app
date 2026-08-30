@@ -1,4 +1,3 @@
-import pytest
 
 def test_list_employees_pagination(client, seeded_db):
     response = client.get("/api/v1/employees?page=1&page_size=20")

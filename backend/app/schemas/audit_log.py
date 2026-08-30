@@ -1,6 +1,7 @@
-from pydantic import BaseModel
 from datetime import datetime
-from typing import Optional
+
+from pydantic import BaseModel
+
 
 class SalaryAuditLogOut(BaseModel):
     id: str
@@ -12,7 +13,7 @@ class SalaryAuditLogOut(BaseModel):
     new_total_usd: float
     change_percentage: float
     reason: str
-    notes: Optional[str]
+    notes: str | None
     changed_by: str
     created_at: datetime
 

@@ -1,15 +1,16 @@
 import uuid
-from datetime import datetime, date
-from typing import Optional
+from datetime import date, datetime
+
 from sqlalchemy.orm import Session
-from app.models.employee import Employee
-from app.models.salary import SalaryRecord
+
 from app.models.audit_log import SalaryAuditLog
-from app.repositories import EmployeeRepository, SalaryRepository, AuditLogRepository
-from app.schemas.salary import SalaryAdjustmentCreate
+from app.models.salary import SalaryRecord
+from app.repositories import AuditLogRepository, EmployeeRepository, SalaryRepository
 from app.schemas.employee import EmployeeDetail
+from app.schemas.salary import SalaryAdjustmentCreate
 from app.services.employee_service import get_employee_by_id
 from app.services.metadata_service import COUNTRIES_DATA
+
 
 def adjust_salary(db: Session, employee_id: str, data: SalaryAdjustmentCreate) -> EmployeeDetail:
     emp_repo = EmployeeRepository(db)

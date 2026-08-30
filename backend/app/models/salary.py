@@ -1,8 +1,11 @@
 import uuid
-from datetime import datetime, date
-from sqlalchemy import Column, String, Float, Boolean, Date, DateTime, ForeignKey, Index
+from datetime import date, datetime
+
+from sqlalchemy import Boolean, Column, Date, DateTime, Float, ForeignKey, Index, String
 from sqlalchemy.orm import relationship
+
 from app.core.database import Base
+
 
 class SalaryRecord(Base):
     __tablename__ = "salary_records"

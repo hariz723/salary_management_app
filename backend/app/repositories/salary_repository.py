@@ -1,7 +1,8 @@
 
-from app.models.salary import ExchangeRate, SalaryBand, SalaryRecord
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
+
+from app.models.salary import ExchangeRate, SalaryBand, SalaryRecord
 
 
 class SalaryRepository:

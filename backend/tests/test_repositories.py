@@ -1,8 +1,10 @@
-import pytest
-from app.repositories import EmployeeRepository, SalaryRepository, AuditLogRepository, AnalyticsRepository
-from app.models.employee import Employee
-from app.models.salary import SalaryRecord
-from app.models.audit_log import SalaryAuditLog
+from app.repositories import (
+    AnalyticsRepository,
+    AuditLogRepository,
+    EmployeeRepository,
+    SalaryRepository,
+)
+
 
 def test_employee_repository(seeded_db):
     repo = EmployeeRepository(seeded_db)

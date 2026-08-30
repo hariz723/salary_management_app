@@ -1,31 +1,35 @@
 import math
 import uuid
-from typing import Optional, List, Tuple
+
 from sqlalchemy.orm import Session
-from app.models.employee import Employee
-from app.models.salary import SalaryRecord, ExchangeRate, SalaryBand
+
 from app.models.audit_log import SalaryAuditLog
-from app.repositories import EmployeeRepository, SalaryRepository, AuditLogRepository
+from app.models.employee import Employee
+from app.models.salary import SalaryRecord
+from app.repositories import AuditLogRepository, EmployeeRepository, SalaryRepository
+from app.schemas.audit_log import SalaryAuditLogOut
 from app.schemas.employee import (
-    EmployeeListItem, EmployeeDetail, PaginatedEmployeeResponse,
-    EmployeeCreate, EmployeeUpdate
+    EmployeeCreate,
+    EmployeeDetail,
+    EmployeeListItem,
+    PaginatedEmployeeResponse,
 )
 from app.schemas.salary import SalaryRecordOut
-from app.schemas.audit_log import SalaryAuditLogOut
-from app.services.metadata_service import get_band_for, COUNTRIES_DATA
+from app.services.metadata_service import COUNTRIES_DATA, get_band_for
+
 
 def get_employees(
     db: Session,
     page: int = 1,
     page_size: int = 25,
-    search: Optional[str] = None,
-    country: Optional[str] = None,
-    department: Optional[str] = None,
-    job_level: Optional[str] = None,
-    gender: Optional[str] = None,
-    min_salary_usd: Optional[float] = None,
-    max_salary_usd: Optional[float] = None,
-    band_status: Optional[str] = None,
+    search: str | None = None,
+    country: str | None = None,
+    department: str | None = None,
+    job_level: str | None = None,
+    gender: str | None = None,
+    min_salary_usd: float | None = None,
+    max_salary_usd: float | None = None,
+    band_status: str | None = None,
     sort_by: str = "created_at",
     sort_order: str = "desc"
 ) -> PaginatedEmployeeResponse:
@@ -49,7 +53,7 @@ def get_employees(
 
     total_pages = math.ceil(total / page_size) if total > 0 else 1
 
-    items: List[EmployeeListItem] = []
+    items: list[EmployeeListItem] = []
     for emp, sal in results:
         min_band, mid_band, max_band = get_band_for(emp.department, emp.job_level, emp.country)
         status = "WITHIN_BAND"
@@ -97,7 +101,7 @@ def get_employees(
         total_pages=total_pages
     )
 
-def get_employee_by_id(db: Session, employee_id: str) -> Optional[EmployeeDetail]:
+def get_employee_by_id(db: Session, employee_id: str) -> EmployeeDetail | None:
     emp_repo = EmployeeRepository(db)
     sal_repo = SalaryRepository(db)
     audit_repo = AuditLogRepository(db)

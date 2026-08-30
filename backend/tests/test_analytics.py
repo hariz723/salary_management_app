@@ -1,4 +1,3 @@
-import pytest
 
 def test_analytics_overview(client, seeded_db):
     response = client.get("/api/v1/analytics/overview")

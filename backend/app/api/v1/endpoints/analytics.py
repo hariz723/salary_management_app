@@ -1,4 +1,7 @@
 
+from fastapi import APIRouter, Depends, Query
+from sqlalchemy.orm import Session
+
 from app.core.database import get_db
 from app.schemas.analytics import (
     BandComplianceSummary,
@@ -11,8 +14,6 @@ from app.schemas.analytics import (
     OverviewStats,
 )
 from app.services import analytics_service
-from fastapi import APIRouter, Depends, Query
-from sqlalchemy.orm import Session
 
 router = APIRouter()
 

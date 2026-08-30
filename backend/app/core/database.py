@@ -1,5 +1,6 @@
 from sqlalchemy import create_engine, event
 from sqlalchemy.orm import declarative_base, sessionmaker
+
 from app.core.config import settings
 
 # Engine configuration supporting PostgreSQL and SQLite

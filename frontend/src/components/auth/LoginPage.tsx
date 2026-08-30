@@ -5,7 +5,6 @@ import {
   Mail,
   User as UserIcon,
   DollarSign,
-  Briefcase,
   Sparkles,
   ArrowRight,
 } from 'lucide-react';
@@ -61,7 +60,6 @@ export const LoginPage: React.FC = () => {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md px-4">
         <div className="bg-white py-8 px-6 shadow-2xl rounded-2xl sm:px-10 border border-slate-100">
-          {/* Demo account quick login helper */}
           <div className="mb-6 bg-blue-50/80 border border-blue-200/70 rounded-xl p-3.5">
             <div className="flex items-center space-x-1.5 text-xs font-semibold text-blue-900 mb-2">
               <Sparkles className="w-3.5 h-3.5 text-blue-600" />

@@ -1,14 +1,24 @@
-import numpy as np
-from typing import List, Dict, Any, Optional
 from collections import defaultdict
+
+import numpy as np
 from sqlalchemy.orm import Session
+
 from app.repositories.analytics_repository import AnalyticsRepository
 from app.schemas.analytics import (
-    OverviewStats, DistributionBucket, DepartmentStats, CountryStats,
-    JobLevelStats, GenderPayGapAnalysis, GenderGroupStats, GenderDepartmentGap,
-    BandComplianceSummary, OutlierEmployee, HRQuestionCard
+    BandComplianceSummary,
+    CountryStats,
+    DepartmentStats,
+    DistributionBucket,
+    GenderDepartmentGap,
+    GenderGroupStats,
+    GenderPayGapAnalysis,
+    HRQuestionCard,
+    JobLevelStats,
+    OutlierEmployee,
+    OverviewStats,
 )
-from app.services.metadata_service import get_band_for, COUNTRIES_DATA, DEPARTMENTS, JOB_LEVELS
+from app.services.metadata_service import JOB_LEVELS, get_band_for
+
 
 def get_overview_stats(db: Session) -> OverviewStats:
     repo = AnalyticsRepository(db)
@@ -30,8 +40,8 @@ def get_overview_stats(db: Session) -> OverviewStats:
 
     active_count = sum(1 for r in records if r.is_active)
     inactive_count = len(records) - active_count
-    countries = set(r.country for r in records)
-    departments = set(r.department for r in records)
+    countries = {r.country for r in records}
+    departments = {r.department for r in records}
 
     underpaid = 0
     overpaid = 0
@@ -65,9 +75,9 @@ def get_overview_stats(db: Session) -> OverviewStats:
 
 def get_pay_distribution(
     db: Session,
-    country: Optional[str] = None,
-    department: Optional[str] = None
-) -> List[DistributionBucket]:
+    country: str | None = None,
+    department: str | None = None
+) -> list[DistributionBucket]:
     repo = AnalyticsRepository(db)
     salaries = repo.get_total_comp_distribution_salaries(country=country, department=department)
     if not salaries:
@@ -85,7 +95,7 @@ def get_pay_distribution(
         ("> $320k", 320000, 10000000),
     ]
 
-    buckets: List[DistributionBucket] = []
+    buckets: list[DistributionBucket] = []
     for label, min_v, max_v in ranges:
         cnt = sum(1 for s in salaries if (s >= min_v if min_v == 0 else s > min_v) and s <= max_v)
         pct = round((cnt / total_count * 100.0), 2)
@@ -98,7 +108,7 @@ def get_pay_distribution(
         ))
     return buckets
 
-def get_department_stats(db: Session) -> List[DepartmentStats]:
+def get_department_stats(db: Session) -> list[DepartmentStats]:
     repo = AnalyticsRepository(db)
     records = repo.get_department_salary_records()
 
@@ -108,7 +118,7 @@ def get_department_stats(db: Session) -> List[DepartmentStats]:
         dept_map[r.department]["bonuses"].append(r.bonus_percentage)
         dept_map[r.department]["totals"].append(r.total_compensation_usd)
 
-    stats: List[DepartmentStats] = []
+    stats: list[DepartmentStats] = []
     for dept in sorted(dept_map.keys()):
         bases = np.array(dept_map[dept]["bases"], dtype=np.float64)
         totals = np.array(dept_map[dept]["totals"], dtype=np.float64)
@@ -132,7 +142,7 @@ def get_department_stats(db: Session) -> List[DepartmentStats]:
         ))
     return stats
 
-def get_country_stats(db: Session) -> List[CountryStats]:
+def get_country_stats(db: Session) -> list[CountryStats]:
     repo = AnalyticsRepository(db)
     records = repo.get_country_salary_records()
 
@@ -146,7 +156,7 @@ def get_country_stats(db: Session) -> List[CountryStats]:
         c["currency"] = r.currency
         c["rate"] = r.exchange_rate_to_usd
 
-    stats: List[CountryStats] = []
+    stats: list[CountryStats] = []
     for country in sorted(country_map.keys()):
         data = country_map[country]
         bases_usd = np.array(data["bases_usd"], dtype=np.float64)
@@ -168,7 +178,7 @@ def get_country_stats(db: Session) -> List[CountryStats]:
         ))
     return stats
 
-def get_job_level_stats(db: Session) -> List[JobLevelStats]:
+def get_job_level_stats(db: Session) -> list[JobLevelStats]:
     repo = AnalyticsRepository(db)
     records = repo.get_job_level_salary_records()
 
@@ -178,7 +188,7 @@ def get_job_level_stats(db: Session) -> List[JobLevelStats]:
         level_map[r.job_level]["totals"].append(r.total_compensation_usd)
         level_map[r.job_level]["equities"].append(r.equity_usd)
 
-    stats: List[JobLevelStats] = []
+    stats: list[JobLevelStats] = []
     for level in JOB_LEVELS:
         if level in level_map:
             bases = np.array(level_map[level]["bases"], dtype=np.float64)
@@ -209,7 +219,7 @@ def get_gender_pay_gap(db: Session) -> GenderPayGapAnalysis:
         dept_gender_map[r.department][r.gender].append(r.base_salary_usd)
 
     total_count = len(records)
-    gender_stats: List[GenderGroupStats] = []
+    gender_stats: list[GenderGroupStats] = []
     for g in ["Male", "Female", "Non-Binary"]:
         if g in overall_gender_map:
             bases = np.array(overall_gender_map[g]["bases"], dtype=np.float64)
@@ -224,7 +234,7 @@ def get_gender_pay_gap(db: Session) -> GenderPayGapAnalysis:
                 median_total_comp_usd=round(float(np.median(totals)), 2)
             ))
 
-    dept_breakdown: List[GenderDepartmentGap] = []
+    dept_breakdown: list[GenderDepartmentGap] = []
     for dept in sorted(dept_gender_map.keys()):
         m_list = dept_gender_map[dept].get("Male", [])
         f_list = dept_gender_map[dept].get("Female", [])
@@ -267,7 +277,7 @@ def get_band_compliance(db: Session) -> BandComplianceSummary:
     underpaid_cnt = 0
     overpaid_cnt = 0
     cost_to_minimum = 0.0
-    outliers: List[OutlierEmployee] = []
+    outliers: list[OutlierEmployee] = []
 
     for r in records:
         min_b, mid_b, max_b = get_band_for(r.department, r.job_level, r.country)
@@ -327,13 +337,12 @@ def get_band_compliance(db: Session) -> BandComplianceSummary:
         top_outliers=outliers[:50]
     )
 
-def get_hr_answers(db: Session) -> List[HRQuestionCard]:
+def get_hr_answers(db: Session) -> list[HRQuestionCard]:
     overview = get_overview_stats(db)
     dept_stats = get_department_stats(db)
     country_stats = get_country_stats(db)
     gender_gap = get_gender_pay_gap(db)
     band_comp = get_band_compliance(db)
-    job_level_stats = get_job_level_stats(db)
 
     top_dept = max(dept_stats, key=lambda d: d.mean_total_comp_usd) if dept_stats else None
     top_bonus_dept = max(dept_stats, key=lambda d: d.avg_bonus_percentage) if dept_stats else None
@@ -342,7 +351,7 @@ def get_hr_answers(db: Session) -> List[HRQuestionCard]:
     repo = AnalyticsRepository(db)
     top_earners = repo.get_top_earners(limit=5)
 
-    cards: List[HRQuestionCard] = [
+    cards: list[HRQuestionCard] = [
         HRQuestionCard(
             id="q1_gender_parity",
             question="What is ACME's gender pay parity index and where are the largest department gaps?",

@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Drawer, Tag, Spin, Timeline, Button, Divider } from 'antd';
+import React, { useEffect, useState, useCallback } from 'react';
+import { Drawer, Tag, Spin, Timeline } from 'antd';
 import { getEmployeeById } from '../../services/api';
 import { EmployeeDetail } from '../../types';
 import { useCurrency } from '../../context/CurrencyContext';
@@ -12,10 +12,7 @@ import {
   Calendar,
   Star,
   DollarSign,
-  TrendingUp,
   History,
-  ShieldCheck,
-  AlertCircle,
   Clock,
   Edit3,
 } from 'lucide-react';
@@ -36,7 +33,7 @@ export const EmployeeDrawer: React.FC<EmployeeDrawerProps> = ({
   const [adjustModalOpen, setAdjustModalOpen] = useState(false);
   const { formatMoney, selectedCurrency } = useCurrency();
 
-  const loadDetails = async () => {
+  const loadDetails = useCallback(async () => {
     if (!employeeId) return;
     setLoading(true);
     try {
@@ -47,11 +44,11 @@ export const EmployeeDrawer: React.FC<EmployeeDrawerProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [employeeId]);
 
   useEffect(() => {
     loadDetails();
-  }, [employeeId]);
+  }, [loadDetails]);
 
   if (!employeeId) return null;
 
@@ -100,7 +97,6 @@ export const EmployeeDrawer: React.FC<EmployeeDrawerProps> = ({
           </div>
         ) : (
           <div className="space-y-6 text-slate-700">
-            {/* Quick Metadata Info */}
             <div className="grid grid-cols-2 gap-3 p-4 bg-slate-50 rounded-xl border border-slate-200/80 text-xs">
               <div className="flex items-center space-x-2">
                 <Briefcase className="w-4 h-4 text-slate-400 shrink-0" />
@@ -134,7 +130,6 @@ export const EmployeeDrawer: React.FC<EmployeeDrawerProps> = ({
               </div>
             </div>
 
-            {/* Current Compensation Card */}
             <div className="p-5 bg-gradient-to-br from-blue-50 to-indigo-50/60 rounded-2xl border border-blue-200/80">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center space-x-2">
@@ -177,7 +172,6 @@ export const EmployeeDrawer: React.FC<EmployeeDrawerProps> = ({
                 </div>
               </div>
 
-              {/* Band range indicator */}
               {employee.band_min_usd && employee.band_max_usd && (
                 <div className="mt-4 pt-3 border-t border-blue-200/50 text-xs">
                   <div className="flex justify-between text-slate-600 mb-1">
@@ -205,7 +199,6 @@ export const EmployeeDrawer: React.FC<EmployeeDrawerProps> = ({
               )}
             </div>
 
-            {/* Audit Logs & Compensation Timeline */}
             <div>
               <div className="flex items-center space-x-2 mb-4">
                 <History className="w-4 h-4 text-slate-600" />
@@ -253,7 +246,6 @@ export const EmployeeDrawer: React.FC<EmployeeDrawerProps> = ({
         )}
       </Drawer>
 
-      {/* Salary Adjustment Modal */}
       {employee && (
         <SalaryAdjustModal
           visible={adjustModalOpen}

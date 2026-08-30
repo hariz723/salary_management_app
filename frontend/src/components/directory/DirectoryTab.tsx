@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Table, Input, Select, Button, Tag, Space, Tooltip, Pagination, message } from 'antd';
+import { Table, Input, Select, Tag, Space, Tooltip, Pagination, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { getEmployees, getMetadata, exportCsvUrl } from '../../services/api';
 import { EmployeeListItem, MetadataResponse } from '../../types';
@@ -9,16 +9,12 @@ import { SalaryAdjustModal } from './SalaryAdjustModal';
 import { ImportCsvModal } from './ImportCsvModal';
 import {
   Search,
-  Filter,
   Download,
   Upload,
   Eye,
   Edit3,
   RotateCcw,
   Users,
-  CheckCircle2,
-  AlertCircle,
-  TrendingUp,
 } from 'lucide-react';
 
 interface DirectoryTabProps {
@@ -31,7 +27,6 @@ export const DirectoryTab: React.FC<DirectoryTabProps> = ({ initialFilter }) => 
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
 
-  // Pagination & Filtering State
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
   const [search, setSearch] = useState('');
@@ -43,20 +38,16 @@ export const DirectoryTab: React.FC<DirectoryTabProps> = ({ initialFilter }) => 
   const [sortBy, setSortBy] = useState('created_at');
   const [sortOrder, setSortOrder] = useState('desc');
 
-  // Metadata for filter options
   const [meta, setMeta] = useState<MetadataResponse | null>(null);
 
-  // Modals & Drawers
   const [selectedEmpId, setSelectedEmpId] = useState<string | null>(null);
   const [adjustEmp, setAdjustEmp] = useState<EmployeeListItem | null>(null);
   const [importModalOpen, setImportModalOpen] = useState(false);
 
-  // Load Metadata
   useEffect(() => {
     getMetadata().then(setMeta).catch(console.error);
   }, []);
 
-  // Fetch Employees
   const fetchEmployees = useCallback(async () => {
     setLoading(true);
     try {
@@ -190,7 +181,7 @@ export const DirectoryTab: React.FC<DirectoryTabProps> = ({ initialFilter }) => 
       key: 'actions',
       align: 'right',
       render: (_, record) => (
-        <Space orientation="horizontal" size="small">
+        <Space size="small">
           <Tooltip title="View Profile & Audit Trail">
             <button
               onClick={() => setSelectedEmpId(record.id)}
@@ -214,7 +205,6 @@ export const DirectoryTab: React.FC<DirectoryTabProps> = ({ initialFilter }) => 
 
   return (
     <div className="space-y-4 pb-12">
-      {/* Top Header & Bulk Action Buttons */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
         <div>
           <div className="flex items-center space-x-2">
@@ -250,10 +240,8 @@ export const DirectoryTab: React.FC<DirectoryTabProps> = ({ initialFilter }) => 
         </div>
       </div>
 
-      {/* Multi-Facet Filter Bar */}
       <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm space-y-3">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2.5">
-          {/* Search bar */}
           <div className="lg:col-span-2">
             <Input
               prefix={<Search className="w-4 h-4 text-slate-400 mr-1" />}
@@ -269,7 +257,6 @@ export const DirectoryTab: React.FC<DirectoryTabProps> = ({ initialFilter }) => 
             />
           </div>
 
-          {/* Country Filter */}
           <Select
             placeholder="All Countries"
             value={country}
@@ -282,7 +269,6 @@ export const DirectoryTab: React.FC<DirectoryTabProps> = ({ initialFilter }) => 
             options={meta?.countries.map((c) => ({ value: c, label: c })) || []}
           />
 
-          {/* Department Filter */}
           <Select
             placeholder="All Departments"
             value={department}
@@ -295,7 +281,6 @@ export const DirectoryTab: React.FC<DirectoryTabProps> = ({ initialFilter }) => 
             options={meta?.departments.map((d) => ({ value: d, label: d })) || []}
           />
 
-          {/* Job Level Filter */}
           <Select
             placeholder="All Levels"
             value={jobLevel}
@@ -308,7 +293,6 @@ export const DirectoryTab: React.FC<DirectoryTabProps> = ({ initialFilter }) => 
             options={meta?.job_levels.map((l) => ({ value: l, label: l })) || []}
           />
 
-          {/* Band Status Filter */}
           <Select
             placeholder="Band Status"
             value={bandStatus}
@@ -326,7 +310,6 @@ export const DirectoryTab: React.FC<DirectoryTabProps> = ({ initialFilter }) => 
           />
         </div>
 
-        {/* Reset Filter Button if any filter is active */}
         {(search || country || department || jobLevel || gender || bandStatus) && (
           <div className="flex justify-end pt-1">
             <button
@@ -340,7 +323,6 @@ export const DirectoryTab: React.FC<DirectoryTabProps> = ({ initialFilter }) => 
         )}
       </div>
 
-      {/* Main Employee Table */}
       <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
         <Table
           columns={columns}
@@ -358,7 +340,6 @@ export const DirectoryTab: React.FC<DirectoryTabProps> = ({ initialFilter }) => 
           }}
         />
 
-        {/* Bottom Pagination Bar */}
         <div className="p-4 border-t border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-50/50">
           <div className="text-xs text-slate-500">
             Showing {(page - 1) * pageSize + 1} to {Math.min(page * pageSize, total)} of{' '}
@@ -380,14 +361,12 @@ export const DirectoryTab: React.FC<DirectoryTabProps> = ({ initialFilter }) => 
         </div>
       </div>
 
-      {/* Profile & History Drawer */}
       <EmployeeDrawer
         employeeId={selectedEmpId}
         onClose={() => setSelectedEmpId(null)}
         onEmployeeUpdated={fetchEmployees}
       />
 
-      {/* Quick Salary Adjust Modal */}
       {adjustEmp && (
         <SalaryAdjustModal
           visible={!!adjustEmp}
@@ -400,7 +379,6 @@ export const DirectoryTab: React.FC<DirectoryTabProps> = ({ initialFilter }) => 
         />
       )}
 
-      {/* CSV Bulk Ingestion Modal */}
       <ImportCsvModal
         visible={importModalOpen}
         onClose={() => setImportModalOpen(false)}

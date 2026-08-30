@@ -1,12 +1,13 @@
-from pydantic import BaseModel, EmailStr, Field
 from datetime import datetime
-from typing import Optional
+
+from pydantic import BaseModel, EmailStr, Field
+
 
 class UserCreate(BaseModel):
     email: EmailStr
     password: str = Field(..., min_length=6, description="Password must be at least 6 characters")
     full_name: str = Field(..., min_length=2, max_length=100)
-    role: Optional[str] = Field(default="HR_MANAGER", description="HR_MANAGER, HR_ADMIN, EXECUTIVE, COMPENSATION_ANALYST")
+    role: str | None = Field(default="HR_MANAGER", description="HR_MANAGER, HR_ADMIN, EXECUTIVE, COMPENSATION_ANALYST")
 
 class UserLogin(BaseModel):
     email: EmailStr
@@ -19,7 +20,7 @@ class UserOut(BaseModel):
     role: str
     is_active: bool
     created_at: datetime
-    last_login: Optional[datetime] = None
+    last_login: datetime | None = None
 
     class Config:
         from_attributes = True
@@ -30,5 +31,5 @@ class Token(BaseModel):
     user: UserOut
 
 class TokenPayload(BaseModel):
-    sub: Optional[str] = None
-    exp: Optional[int] = None
+    sub: str | None = None
+    exp: int | None = None
