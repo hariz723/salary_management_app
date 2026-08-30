@@ -1,0 +1,22 @@
+# Ruff configuration for ACME Salary Management Backend
+target-version = "py313"
+line-length = 100
+
+[lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # Pyflakes
+    "I",   # isort (import sorting)
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+]
+ignore = [
+    "E501",  # Line length handled by formatter
+    "B008",  # Do not perform function call in argument defaults (FastAPI Depends)
+    "B904",  # raise ... from err (optional in simple handlers)
+]
+
+[lint.isort]
+known-first-party = ["app"]
