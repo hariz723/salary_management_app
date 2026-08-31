@@ -112,6 +112,10 @@ class EmployeeRepository:
         return False
 
     def bulk_delete(self, employee_ids: list[str]) -> int:
-        count = self.db.query(Employee).filter(Employee.id.in_(employee_ids)).delete(synchronize_session=False)
+        count = (
+            self.db.query(Employee)
+            .filter(Employee.id.in_(employee_ids))
+            .delete(synchronize_session=False)
+        )
         self.db.commit()
         return count

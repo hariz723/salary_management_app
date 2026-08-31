@@ -19,7 +19,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
-    description="Enterprise Salary Management System for ACME Corp (10,000 Employees). Provides high-performance analytics, multi-currency compensation modeling, fast paginated search, and audit trails.",
+    description="Enterprise Global Salary Management System. Provides high-performance analytics, multi-currency compensation modeling, fast paginated search, and audit trails.",
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",

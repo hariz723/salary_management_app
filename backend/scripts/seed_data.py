@@ -42,6 +42,33 @@ def seed_users(db):
     default_users = [
         User(
             id=str(uuid.uuid4()),
+            email="hr.manager@company.com",
+            hashed_password=hash_password("Password123"),
+            full_name="Sarah Jenkins (HR Manager)",
+            role="HR_MANAGER",
+            is_active=True,
+            created_at=datetime.utcnow(),
+        ),
+        User(
+            id=str(uuid.uuid4()),
+            email="admin@company.com",
+            hashed_password=hash_password("Admin123!"),
+            full_name="System Administrator",
+            role="HR_ADMIN",
+            is_active=True,
+            created_at=datetime.utcnow(),
+        ),
+        User(
+            id=str(uuid.uuid4()),
+            email="executive@company.com",
+            hashed_password=hash_password("Exec123!"),
+            full_name="Chief People Officer",
+            role="EXECUTIVE",
+            is_active=True,
+            created_at=datetime.utcnow(),
+        ),
+        User(
+            id=str(uuid.uuid4()),
             email="hr.manager@acme.com",
             hashed_password=hash_password("Password123"),
             full_name="Sarah Jenkins (HR Manager)",
@@ -55,15 +82,6 @@ def seed_users(db):
             hashed_password=hash_password("Admin123!"),
             full_name="System Administrator",
             role="HR_ADMIN",
-            is_active=True,
-            created_at=datetime.utcnow(),
-        ),
-        User(
-            id=str(uuid.uuid4()),
-            email="executive@acme.com",
-            hashed_password=hash_password("Exec123!"),
-            full_name="Chief People Officer",
-            role="EXECUTIVE",
             is_active=True,
             created_at=datetime.utcnow(),
         ),
@@ -214,7 +232,7 @@ def generate_employees(db, total_count=1000):
 
     for i in range(1, total_count + 1):
         emp_id = str(uuid.uuid4())
-        emp_code = f"ACM-{i:05d}"
+        emp_code = f"EMP-{i:05d}"
         country = random.choices(countries, weights=c_weights, k=1)[0]
         c_meta = COUNTRIES_DATA[country]
         city = random.choice(CITIES_BY_COUNTRY[country])
@@ -229,11 +247,11 @@ def generate_employees(db, total_count=1000):
         )
         last_name = fake.last_name()
 
-        base_email = f"{first_name.lower()}.{last_name.lower()}@acme.com"
+        base_email = f"{first_name.lower()}.{last_name.lower()}@company.com"
         email = base_email
         email_suffix = 1
         while email in generated_emails:
-            email = f"{first_name.lower()}.{last_name.lower()}{email_suffix}@acme.com"
+            email = f"{first_name.lower()}.{last_name.lower()}{email_suffix}@company.com"
             email_suffix += 1
         generated_emails.add(email)
 

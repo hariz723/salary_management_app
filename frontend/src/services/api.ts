@@ -73,6 +73,33 @@ export const getEmployeeById = async (id: string): Promise<EmployeeDetail> => {
   return res.data;
 };
 
+export interface CreateEmployeePayload {
+  first_name: string;
+  last_name: string;
+  email: string;
+  gender: string;
+  country: string;
+  country_code: string;
+  city: string;
+  department: string;
+  job_title: string;
+  job_level: string;
+  hire_date?: string;
+  performance_rating?: number;
+  is_active?: boolean;
+  initial_salary: {
+    base_salary: number;
+    bonus_percentage?: number;
+    equity_usd?: number;
+    currency: string;
+  };
+}
+
+export const createEmployee = async (payload: CreateEmployeePayload): Promise<EmployeeDetail> => {
+  const res = await apiClient.post<EmployeeDetail>('/employees', payload);
+  return res.data;
+};
+
 export const deleteEmployee = async (id: string): Promise<{ status: string; message: string }> => {
   const res = await apiClient.delete<{ status: string; message: string }>(`/employees/${id}`);
   return res.data;

@@ -18,4 +18,4 @@ def get_logger(name: str = "app") -> logging.Logger:
     return logging.getLogger(name)
 
 
-logger = get_logger("acme_salary")
+logger = get_logger("salary_app")

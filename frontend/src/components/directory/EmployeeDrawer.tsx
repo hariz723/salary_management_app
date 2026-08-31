@@ -1,26 +1,34 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { Drawer, Tag, Spin, Timeline } from 'antd';
+import React, { useEffect, useState } from 'react';
+import {
+  Drawer,
+  Box,
+  Typography,
+  IconButton,
+  Chip,
+  Paper,
+  Button,
+  CircularProgress,
+  Avatar,
+  Tab,
+  Tabs,
+} from '@mui/material';
+import {
+  Close,
+  Person,
+  History,
+  Star,
+  Edit,
+  TrendingUp,
+} from '@mui/icons-material';
 import { getEmployeeById } from '../../services/api';
 import { EmployeeDetail } from '../../types';
 import { useCurrency } from '../../context/CurrencyContext';
 import { SalaryAdjustModal } from './SalaryAdjustModal';
-import {
-  User,
-  Mail,
-  MapPin,
-  Briefcase,
-  Calendar,
-  Star,
-  DollarSign,
-  History,
-  Clock,
-  Edit3,
-} from 'lucide-react';
 
 interface EmployeeDrawerProps {
   employeeId: string | null;
   onClose: () => void;
-  onEmployeeUpdated?: () => void;
+  onEmployeeUpdated: () => void;
 }
 
 export const EmployeeDrawer: React.FC<EmployeeDrawerProps> = ({
@@ -28,232 +36,323 @@ export const EmployeeDrawer: React.FC<EmployeeDrawerProps> = ({
   onClose,
   onEmployeeUpdated,
 }) => {
+  const { formatMoney } = useCurrency();
   const [employee, setEmployee] = useState<EmployeeDetail | null>(null);
   const [loading, setLoading] = useState(false);
+  const [tabIndex, setTabIndex] = useState(0); // 0: Overview, 1: History, 2: Audit Logs
   const [adjustModalOpen, setAdjustModalOpen] = useState(false);
-  const { formatMoney, selectedCurrency } = useCurrency();
-
-  const loadDetails = useCallback(async () => {
-    if (!employeeId) return;
-    setLoading(true);
-    try {
-      const data = await getEmployeeById(employeeId);
-      setEmployee(data);
-    } catch (err) {
-      console.error('Failed to load employee:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, [employeeId]);
 
   useEffect(() => {
-    loadDetails();
-  }, [loadDetails]);
+    if (!employeeId) {
+      setEmployee(null);
+      return;
+    }
+    const loadData = async () => {
+      setLoading(true);
+      try {
+        const data = await getEmployeeById(employeeId);
+        setEmployee(data);
+      } catch (err) {
+        console.error('Failed to load employee details:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
+  }, [employeeId]);
 
-  if (!employeeId) return null;
+  const currentSalary = employee?.salary_history.find((s) => s.is_current);
 
   return (
     <>
       <Drawer
-        title={
-          <div className="flex items-center justify-between w-full pr-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-sm">
-                {employee ? `${employee.first_name[0]}${employee.last_name[0]}` : <User className="w-5 h-5" />}
-              </div>
-              <div>
-                <div className="font-bold text-base text-slate-900 leading-tight">
-                  {employee?.full_name || 'Employee Profile'}
-                </div>
-                <div className="text-xs text-slate-500 font-mono">{employee?.employee_code}</div>
-              </div>
-            </div>
-            {employee && (
-              <Tag
+        anchor="right"
+        open={Boolean(employeeId)}
+        onClose={onClose}
+        PaperProps={{
+          sx: {
+            width: { xs: '100%', sm: 580 },
+            p: 3,
+            backgroundColor: '#f8fafc',
+          },
+        }}
+      >
+        {loading ? (
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+            <CircularProgress size={40} />
+            <Typography variant="body2" sx={{ mt: 2, color: '#64748b' }}>
+              Loading employee record...
+            </Typography>
+          </Box>
+        ) : !employee ? (
+          <Box sx={{ textAlign: 'center', mt: 8 }}>
+            <Typography color="text.secondary">Employee profile not found.</Typography>
+          </Box>
+        ) : (
+          <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+            {/* Header */}
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2.5 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                <Avatar
+                  sx={{
+                    width: 48,
+                    height: 48,
+                    bgcolor: '#eff6ff',
+                    color: '#1d4ed8',
+                    fontWeight: 800,
+                  }}
+                >
+                  {employee.first_name[0]}{employee.last_name[0]}
+                </Avatar>
+                <Box>
+                  <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a', lineHeight: 1.2 }}>
+                    {employee.full_name}
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: '#64748b', fontFamily: 'monospace' }}>
+                    {employee.employee_code} • {employee.email}
+                  </Typography>
+                </Box>
+              </Box>
+
+              <IconButton onClick={onClose} size="small" sx={{ color: '#64748b' }}>
+                <Close />
+              </IconButton>
+            </Box>
+
+            {/* Quick Badges */}
+            <Box sx={{ display: 'flex', gap: 1, mb: 2.5, flexWrap: 'wrap' }}>
+              <Chip
+                label={employee.band_status.replace('_', ' ')}
                 color={
                   employee.band_status === 'WITHIN_BAND'
-                    ? 'green'
+                    ? 'success'
                     : employee.band_status === 'UNDERPAID'
-                    ? 'red'
-                    : 'orange'
+                    ? 'error'
+                    : 'warning'
                 }
-                className="text-xs font-semibold px-2 py-0.5"
-              >
-                {employee.band_status.replace('_', ' ')}
-              </Tag>
-            )}
-          </div>
-        }
-        placement="right"
-        width={typeof window !== 'undefined' && window.innerWidth < 640 ? '100%' : 620}
-        onClose={onClose}
-        open={!!employeeId}
-        destroyOnClose
-      >
-        {loading || !employee ? (
-          <div className="flex flex-col items-center justify-center h-64">
-            <Spin size="large" />
-            <span className="mt-3 text-xs text-slate-500">Loading compensation profile & audit history...</span>
-          </div>
-        ) : (
-          <div className="space-y-6 text-slate-700">
-            <div className="grid grid-cols-2 gap-3 p-4 bg-slate-50 rounded-xl border border-slate-200/80 text-xs">
-              <div className="flex items-center space-x-2">
-                <Briefcase className="w-4 h-4 text-slate-400 shrink-0" />
-                <span className="text-slate-500">Role:</span>
-                <span className="font-semibold text-slate-800">{employee.job_title}</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Tag color="purple" className="text-[10px] m-0">{employee.job_level}</Tag>
-                <span className="text-slate-500">Dept:</span>
-                <span className="font-semibold text-slate-800">{employee.department}</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <MapPin className="w-4 h-4 text-slate-400 shrink-0" />
-                <span className="text-slate-500">Location:</span>
-                <span className="font-semibold text-slate-800">{employee.city}, {employee.country}</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Calendar className="w-4 h-4 text-slate-400 shrink-0" />
-                <span className="text-slate-500">Hired:</span>
-                <span className="font-semibold text-slate-800">{employee.hire_date}</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Mail className="w-4 h-4 text-slate-400 shrink-0" />
-                <span className="text-slate-500">Email:</span>
-                <span className="font-mono text-slate-800 truncate">{employee.email}</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Star className="w-4 h-4 text-amber-500 shrink-0" />
-                <span className="text-slate-500">Rating:</span>
-                <span className="font-bold text-amber-600">{employee.performance_rating} / 5.0</span>
-              </div>
-            </div>
-
-            <div className="p-5 bg-gradient-to-br from-blue-50 to-indigo-50/60 rounded-2xl border border-blue-200/80">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center space-x-2">
-                  <DollarSign className="w-4 h-4 text-blue-600" />
-                  <span className="font-bold text-sm text-slate-900">Current Total Target Compensation</span>
-                </div>
-                <button
-                  onClick={() => setAdjustModalOpen(true)}
-                  className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold shadow-sm flex items-center space-x-1.5 transition-all"
-                >
-                  <Edit3 className="w-3.5 h-3.5" />
-                  <span>Adjust Salary</span>
-                </button>
-              </div>
-
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
-                <div className="p-2.5 bg-white rounded-xl shadow-xs border border-blue-100">
-                  <div className="text-[11px] text-slate-500 font-medium">Local Base</div>
-                  <div className="text-sm font-bold text-slate-900 mt-0.5">
-                    {employee.current_salary?.currency} {employee.current_salary?.base_salary.toLocaleString()}
-                  </div>
-                </div>
-                <div className="p-2.5 bg-white rounded-xl shadow-xs border border-blue-100">
-                  <div className="text-[11px] text-slate-500 font-medium">Target Bonus</div>
-                  <div className="text-sm font-bold text-slate-900 mt-0.5">
-                    {employee.current_salary?.bonus_percentage}%
-                  </div>
-                </div>
-                <div className="p-2.5 bg-white rounded-xl shadow-xs border border-blue-100">
-                  <div className="text-[11px] text-slate-500 font-medium">Annual Equity</div>
-                  <div className="text-sm font-bold text-slate-900 mt-0.5">
-                    ${employee.current_salary?.equity_usd.toLocaleString()} USD
-                  </div>
-                </div>
-                <div className="p-2.5 bg-blue-600 text-white rounded-xl shadow-xs">
-                  <div className="text-[11px] text-blue-100 font-medium">Total ({selectedCurrency})</div>
-                  <div className="text-sm font-extrabold mt-0.5">
-                    {formatMoney(employee.current_salary?.total_compensation_usd || 0)}
-                  </div>
-                </div>
-              </div>
-
-              {employee.band_min_usd && employee.band_max_usd && (
-                <div className="mt-4 pt-3 border-t border-blue-200/50 text-xs">
-                  <div className="flex justify-between text-slate-600 mb-1">
-                    <span>Band Min: {formatMoney(employee.band_min_usd)}</span>
-                    <span className="font-semibold text-slate-800">Mid: {formatMoney(employee.band_mid_usd || 0)}</span>
-                    <span>Max: {formatMoney(employee.band_max_usd)}</span>
-                  </div>
-                  <div className="relative w-full bg-slate-200 h-2 rounded-full overflow-hidden">
-                    <div
-                      className="bg-blue-600 h-2 rounded-full"
-                      style={{
-                        width: `${Math.min(
-                          Math.max(
-                            (((employee.current_salary?.base_salary_usd || 0) - employee.band_min_usd) /
-                              (employee.band_max_usd - employee.band_min_usd)) *
-                              100,
-                            5
-                          ),
-                          100
-                        )}%`,
-                      }}
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div>
-              <div className="flex items-center space-x-2 mb-4">
-                <History className="w-4 h-4 text-slate-600" />
-                <h3 className="font-bold text-sm text-slate-900">Chronological Salary Audit Trail</h3>
-              </div>
-
-              <Timeline
-                mode="left"
-                className="text-xs"
-                items={employee.audit_logs.map((log) => ({
-                  color: log.change_type === 'PROMOTION' ? 'green' : 'blue',
-                  label: (
-                    <span className="text-[11px] text-slate-400">
-                      {new Date(log.created_at).toLocaleDateString()}
-                    </span>
-                  ),
-                  children: (
-                    <div className="p-3 bg-slate-50 border border-slate-200/70 rounded-xl space-y-1">
-                      <div className="flex items-center justify-between">
-                        <Tag color="blue" className="text-[10px] m-0 font-semibold">
-                          {log.change_type}
-                        </Tag>
-                        {log.change_percentage > 0 && (
-                          <span className="text-[11px] font-bold text-emerald-600">
-                            +{log.change_percentage}% Increase
-                          </span>
-                        )}
-                      </div>
-                      <div className="font-semibold text-slate-800 text-xs mt-1">
-                        Reason: {log.reason}
-                      </div>
-                      <div className="text-[11px] text-slate-500">
-                        Previous: {formatMoney(log.previous_total_usd)} → New: {formatMoney(log.new_total_usd)}
-                      </div>
-                      <div className="text-[10px] text-slate-400 flex items-center space-x-1 mt-1">
-                        <Clock className="w-3 h-3" />
-                        <span>Logged by {log.changed_by}</span>
-                      </div>
-                    </div>
-                  ),
-                }))}
+                size="small"
+                sx={{ fontWeight: 700 }}
               />
-            </div>
-          </div>
+              <Chip label={employee.department} size="small" variant="outlined" sx={{ fontWeight: 600 }} />
+              <Chip label={employee.job_level} size="small" color="secondary" sx={{ fontWeight: 700 }} />
+              <Chip
+                icon={<Star sx={{ fontSize: '14px !important', color: '#b45309' }} />}
+                label={`★ ${employee.performance_rating.toFixed(1)}`}
+                size="small"
+                sx={{ bgcolor: '#fef3c7', color: '#b45309', fontWeight: 700 }}
+              />
+            </Box>
+
+            {/* Compensation Highlight Card */}
+            <Paper
+              elevation={0}
+              sx={{
+                p: 2.5,
+                mb: 2.5,
+                borderRadius: 3,
+                background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
+                color: '#ffffff',
+              }}
+            >
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <Box>
+                  <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase' }}>
+                    Total Annual Compensation
+                  </Typography>
+                  <Typography variant="h5" sx={{ fontWeight: 800, color: '#ffffff', mt: 0.5 }}>
+                    {currentSalary ? formatMoney(currentSalary.total_compensation_usd) : '$0'}
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: '#94a3b8', display: 'block', mt: 0.5 }}>
+                    Local: {currentSalary?.currency} {currentSalary?.base_salary.toLocaleString()} base + {currentSalary?.bonus_percentage}% bonus
+                  </Typography>
+                </Box>
+
+                <Button
+                  variant="contained"
+                  size="small"
+                  startIcon={<Edit />}
+                  onClick={() => setAdjustModalOpen(true)}
+                  sx={{
+                    borderRadius: 2,
+                    fontWeight: 700,
+                    bgcolor: '#2563eb',
+                    '&:hover': { bgcolor: '#1d4ed8' },
+                  }}
+                >
+                  Adjust
+                </Button>
+              </Box>
+            </Paper>
+
+            {/* Navigation Tabs */}
+            <Tabs
+              value={tabIndex}
+              onChange={(_, val) => setTabIndex(val)}
+              variant="fullWidth"
+              sx={{
+                mb: 2,
+                borderBottom: '1px solid #e2e8f0',
+                '& .MuiTab-root': { fontWeight: 700, fontSize: '0.8125rem' },
+              }}
+            >
+              <Tab label="Profile & Bands" icon={<Person fontSize="small" />} iconPosition="start" />
+              <Tab label="Salary History" icon={<History fontSize="small" />} iconPosition="start" />
+              <Tab label="Audit Logs" icon={<TrendingUp fontSize="small" />} iconPosition="start" />
+            </Tabs>
+
+            {/* Tab Contents */}
+            <Box sx={{ flex: 1, overflowY: 'auto', pr: 0.5 }}>
+              {tabIndex === 0 && (
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  {/* Job Details Paper */}
+                  <Paper elevation={0} sx={{ p: 2, borderRadius: 2.5, bgcolor: '#ffffff', border: '1px solid #e2e8f0' }}>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 800, mb: 1.5, color: '#0f172a' }}>
+                      Position Information
+                    </Typography>
+                    <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5 }}>
+                      <Box>
+                        <Typography variant="caption" sx={{ color: '#64748b' }}>Job Title</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 600 }}>{employee.job_title}</Typography>
+                      </Box>
+                      <Box>
+                        <Typography variant="caption" sx={{ color: '#64748b' }}>Department</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 600 }}>{employee.department}</Typography>
+                      </Box>
+                      <Box>
+                        <Typography variant="caption" sx={{ color: '#64748b' }}>Location</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 600 }}>{employee.city}, {employee.country}</Typography>
+                      </Box>
+                      <Box>
+                        <Typography variant="caption" sx={{ color: '#64748b' }}>Hire Date</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 600 }}>{employee.hire_date}</Typography>
+                      </Box>
+                    </Box>
+                  </Paper>
+
+                  {/* Compensation Band Benchmarks */}
+                  {employee.band_min_usd !== undefined && employee.band_max_usd !== undefined && (
+                    <Paper elevation={0} sx={{ p: 2, borderRadius: 2.5, bgcolor: '#ffffff', border: '1px solid #e2e8f0' }}>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 800, mb: 1.5, color: '#0f172a' }}>
+                        Salary Band Governance (USD)
+                      </Typography>
+                      <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 1, textAlign: 'center' }}>
+                        <Box sx={{ p: 1, bgcolor: '#f8fafc', borderRadius: 2, border: '1px solid #f1f5f9' }}>
+                          <Typography variant="caption" sx={{ color: '#64748b', display: 'block' }}>Min Band</Typography>
+                          <Typography variant="body2" sx={{ fontWeight: 700, color: '#dc2626' }}>
+                            {formatMoney(employee.band_min_usd)}
+                          </Typography>
+                        </Box>
+                        <Box sx={{ p: 1, bgcolor: '#eff6ff', borderRadius: 2, border: '1px solid #bfdbfe' }}>
+                          <Typography variant="caption" sx={{ color: '#1e40af', display: 'block' }}>Mid Band</Typography>
+                          <Typography variant="body2" sx={{ fontWeight: 700, color: '#2563eb' }}>
+                            {formatMoney(employee.band_mid_usd || 0)}
+                          </Typography>
+                        </Box>
+                        <Box sx={{ p: 1, bgcolor: '#f8fafc', borderRadius: 2, border: '1px solid #f1f5f9' }}>
+                          <Typography variant="caption" sx={{ color: '#64748b', display: 'block' }}>Max Band</Typography>
+                          <Typography variant="body2" sx={{ fontWeight: 700, color: '#059669' }}>
+                            {formatMoney(employee.band_max_usd)}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </Paper>
+                  )}
+                </Box>
+              )}
+
+              {tabIndex === 1 && (
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                  {employee.salary_history.map((sal) => (
+                    <Paper
+                      key={sal.id}
+                      elevation={0}
+                      sx={{
+                        p: 2,
+                        borderRadius: 2.5,
+                        bgcolor: '#ffffff',
+                        border: sal.is_current ? '1.5px solid #2563eb' : '1px solid #e2e8f0',
+                      }}
+                    >
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Typography variant="body2" sx={{ fontWeight: 800, color: '#0f172a' }}>
+                          {formatMoney(sal.total_compensation_usd)}
+                        </Typography>
+                        {sal.is_current && <Chip label="Current" size="small" color="primary" sx={{ height: 20, fontWeight: 700 }} />}
+                      </Box>
+                      <Typography variant="caption" sx={{ color: '#64748b', display: 'block', mt: 0.5 }}>
+                        Base: {sal.currency} {sal.base_salary.toLocaleString()} • Effective: {sal.effective_date}
+                      </Typography>
+                    </Paper>
+                  ))}
+                </Box>
+              )}
+
+              {tabIndex === 2 && (
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                  {employee.audit_logs.length === 0 ? (
+                    <Typography variant="body2" sx={{ color: '#94a3b8', textAlign: 'center', py: 4 }}>
+                      No audit history recorded.
+                    </Typography>
+                  ) : (
+                    employee.audit_logs.map((log) => (
+                      <Paper key={log.id} elevation={0} sx={{ p: 2, borderRadius: 2.5, bgcolor: '#ffffff', border: '1px solid #e2e8f0' }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <Chip label={log.change_type} size="small" sx={{ fontWeight: 700, height: 20 }} />
+                          <Typography variant="caption" sx={{ color: '#94a3b8' }}>
+                            {new Date(log.created_at).toLocaleDateString()}
+                          </Typography>
+                        </Box>
+                        <Typography variant="body2" sx={{ fontWeight: 700, mt: 1, color: '#0f172a' }}>
+                          {log.reason}
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: '#64748b', display: 'block', mt: 0.5 }}>
+                          Changed from {formatMoney(log.previous_total_usd)} to {formatMoney(log.new_total_usd)} ({log.change_percentage > 0 ? `+${log.change_percentage}%` : `${log.change_percentage}%`}) by {log.changed_by}
+                        </Typography>
+                      </Paper>
+                    ))
+                  )}
+                </Box>
+              )}
+            </Box>
+          </Box>
         )}
       </Drawer>
 
-      {employee && (
+      {adjustModalOpen && currentSalary && employee && (
         <SalaryAdjustModal
           visible={adjustModalOpen}
-          employee={employee}
+          employee={{
+            id: employee.id,
+            employee_code: employee.employee_code,
+            first_name: employee.first_name,
+            last_name: employee.last_name,
+            full_name: employee.full_name,
+            email: employee.email,
+            department: employee.department,
+            job_level: employee.job_level,
+            job_title: employee.job_title,
+            country: employee.country,
+            country_code: employee.country_code,
+            city: employee.city,
+            gender: employee.gender,
+            currency: currentSalary.currency,
+            base_salary: currentSalary.base_salary,
+            bonus_percentage: currentSalary.bonus_percentage,
+            equity_usd: currentSalary.equity_usd,
+            base_salary_usd: currentSalary.base_salary_usd,
+            total_compensation_usd: currentSalary.total_compensation_usd,
+            band_status: employee.band_status,
+            performance_rating: employee.performance_rating,
+            hire_date: employee.hire_date,
+            is_active: employee.is_active,
+          }}
           onClose={() => setAdjustModalOpen(false)}
-          onSuccess={(updated) => {
-            setEmployee(updated);
-            if (onEmployeeUpdated) onEmployeeUpdated();
+          onSuccess={() => {
+            setAdjustModalOpen(false);
+            onEmployeeUpdated();
+            if (employeeId) {
+              getEmployeeById(employeeId).then(setEmployee);
+            }
           }}
         />
       )}

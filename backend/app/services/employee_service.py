@@ -155,7 +155,7 @@ def create_employee(db: Session, data: EmployeeCreate) -> EmployeeDetail:
     audit_repo = AuditLogRepository(db)
 
     count = emp_repo.count()
-    emp_code = f"ACM-{count + 1:05d}"
+    emp_code = f"EMP-{count + 1:05d}"
 
     emp = Employee(
         id=str(uuid.uuid4()),

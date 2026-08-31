@@ -262,3 +262,13 @@ export interface MetadataResponse {
   currencies: ExchangeRate[];
   salary_bands: SalaryBand[];
 }
+
+export interface ImportCsvError {
+  row: number;
+  error: string;
+}
+
+export interface ImportCsvResponse {
+  imported_count: number;
+  errors: ImportCsvError[];
+}

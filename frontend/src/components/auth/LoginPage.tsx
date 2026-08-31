@@ -1,26 +1,49 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import {
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  TextField,
+  Button,
+  Alert,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  InputAdornment,
+  IconButton,
+  Avatar,
+  Tab,
+  Tabs,
+  Paper,
+} from '@mui/material';
+import {
   Lock,
   Mail,
-  User as UserIcon,
-  DollarSign,
-  Sparkles,
-  ArrowRight,
-  CheckCircle2,
-} from 'lucide-react';
-import { Alert, Button, Input, Select, message } from 'antd';
+  Person,
+  AttachMoney,
+  AutoAwesome,
+  ArrowForward,
+  Visibility,
+  VisibilityOff,
+  CheckCircle,
+} from '@mui/icons-material';
 
 export const LoginPage: React.FC = () => {
   const { login, signup } = useAuth();
-  const [isLogin, setIsLogin] = useState(true);
+  const [tabIndex, setTabIndex] = useState(0); // 0: Sign In, 1: Create Account
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [role, setRole] = useState('HR_MANAGER');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+
+  const isLogin = tabIndex === 0;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,9 +56,8 @@ export const LoginPage: React.FC = () => {
         await login(email, password);
       } else {
         await signup({ email, password, full_name: fullName, role });
-        message.success('Account created successfully! Please sign in with your credentials.');
-        setSuccessMsg('Account created successfully! Please enter your password to sign in.');
-        setIsLogin(true);
+        setSuccessMsg('Account created successfully! Please sign in with your credentials.');
+        setTabIndex(0);
         setPassword('');
         setFullName('');
       }
@@ -50,160 +72,251 @@ export const LoginPage: React.FC = () => {
   const setDemoCredentials = (demoEmail: string, demoPass: string) => {
     setEmail(demoEmail);
     setPassword(demoPass);
-    setIsLogin(true);
+    setTabIndex(0);
     setErrorMsg(null);
     setSuccessMsg(null);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-blue-500 to-indigo-500 text-white shadow-xl shadow-blue-500/30 mb-4">
-          <DollarSign className="w-9 h-9" />
-        </div>
-        <h2 className="text-3xl font-extrabold text-white tracking-tight">ACME Corporation</h2>
-        <p className="mt-2 text-sm text-slate-300">
-          Global Salary & Compensation Intelligence
-        </p>
-      </div>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        background: 'radial-gradient(ellipse at top, #1e293b 0%, #0f172a 100%)',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        p: 2,
+      }}
+    >
+      {/* Brand Header */}
+      <Box sx={{ textAlign: 'center', mb: 3 }}>
+        <Avatar
+          sx={{
+            width: 56,
+            height: 56,
+            mx: 'auto',
+            mb: 1.5,
+            background: 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)',
+            boxShadow: '0 8px 24px rgba(37, 99, 235, 0.4)',
+          }}
+        >
+          <AttachMoney fontSize="large" sx={{ color: '#ffffff' }} />
+        </Avatar>
+        <Typography variant="h5" sx={{ fontWeight: 800, color: '#ffffff' }}>
+          Global Salary Hub
+        </Typography>
+        <Typography variant="body2" sx={{ color: '#94a3b8', mt: 0.5 }}>
+          Enterprise Compensation & Payroll Intelligence
+        </Typography>
+      </Box>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md px-4">
-        <div className="bg-white py-8 px-6 shadow-2xl rounded-2xl sm:px-10 border border-slate-100">
-          <div className="mb-6 bg-blue-50/80 border border-blue-200/70 rounded-xl p-3.5">
-            <div className="flex items-center space-x-1.5 text-xs font-semibold text-blue-900 mb-2">
-              <Sparkles className="w-3.5 h-3.5 text-blue-600" />
-              <span>1-Click Demo Accounts:</span>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => setDemoCredentials('hr.manager@acme.com', 'Password123')}
-                className="text-left px-2.5 py-1.5 bg-white hover:bg-blue-100/60 border border-blue-200 rounded-lg text-xs transition-all text-slate-700"
+      {/* Main Card */}
+      <Card
+        sx={{
+          maxWidth: 440,
+          width: '100%',
+          borderRadius: 4,
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.35)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+        }}
+      >
+        <CardContent sx={{ p: { xs: 3, sm: 4 } }}>
+          {/* 1-Click Demo Accounts */}
+          <Paper
+            elevation={0}
+            sx={{
+              p: 2,
+              mb: 3,
+              backgroundColor: '#eff6ff',
+              borderRadius: 3,
+              border: '1px solid #bfdbfe',
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+              <AutoAwesome sx={{ fontSize: 16, color: '#2563eb' }} />
+              <Typography variant="caption" sx={{ fontWeight: 800, color: '#1e3a8a', letterSpacing: '0.05em' }}>
+                1-CLICK DEMO LOGIN ACCOUNTS:
+              </Typography>
+            </Box>
+            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
+              <Button
+                size="small"
+                variant="outlined"
+                onClick={() => setDemoCredentials('hr.manager@company.com', 'Password123')}
+                sx={{
+                  backgroundColor: '#ffffff',
+                  borderColor: '#bfdbfe',
+                  justifyContent: 'flex-start',
+                  textAlign: 'left',
+                  p: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'flex-start',
+                  '&:hover': { backgroundColor: '#dbeafe', borderColor: '#93c5fd' },
+                }}
               >
-                <div className="font-semibold text-blue-800">HR Manager</div>
-                <div className="text-[11px] text-slate-500 truncate">hr.manager@acme.com</div>
-              </button>
-              <button
-                type="button"
-                onClick={() => setDemoCredentials('admin@acme.com', 'Admin123!')}
-                className="text-left px-2.5 py-1.5 bg-white hover:bg-blue-100/60 border border-blue-200 rounded-lg text-xs transition-all text-slate-700"
+                <Typography variant="caption" sx={{ fontWeight: 700, color: '#1d4ed8' }}>
+                  HR Manager
+                </Typography>
+                <Typography variant="caption" sx={{ color: '#64748b', fontSize: '0.6875rem' }}>
+                  hr.manager@company.com
+                </Typography>
+              </Button>
+
+              <Button
+                size="small"
+                variant="outlined"
+                onClick={() => setDemoCredentials('admin@company.com', 'Admin123!')}
+                sx={{
+                  backgroundColor: '#ffffff',
+                  borderColor: '#bfdbfe',
+                  justifyContent: 'flex-start',
+                  textAlign: 'left',
+                  p: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'flex-start',
+                  '&:hover': { backgroundColor: '#dbeafe', borderColor: '#93c5fd' },
+                }}
               >
-                <div className="font-semibold text-blue-800">System Admin</div>
-                <div className="text-[11px] text-slate-500 truncate">admin@acme.com</div>
-              </button>
-            </div>
-          </div>
+                <Typography variant="caption" sx={{ fontWeight: 700, color: '#1d4ed8' }}>
+                  System Admin
+                </Typography>
+                <Typography variant="caption" sx={{ color: '#64748b', fontSize: '0.6875rem' }}>
+                  admin@company.com
+                </Typography>
+              </Button>
+            </Box>
+          </Paper>
 
-          <div className="flex border-b border-slate-200 mb-6">
-            <button
-              onClick={() => {
-                setIsLogin(true);
-                setErrorMsg(null);
-                setSuccessMsg(null);
-              }}
-              className={`flex-1 pb-3 text-center text-sm font-semibold border-b-2 transition-all ${
-                isLogin ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-400 hover:text-slate-600'
-              }`}
-            >
-              Sign In
-            </button>
-            <button
-              onClick={() => {
-                setIsLogin(false);
-                setErrorMsg(null);
-                setSuccessMsg(null);
-              }}
-              className={`flex-1 pb-3 text-center text-sm font-semibold border-b-2 transition-all ${
-                !isLogin ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-400 hover:text-slate-600'
-              }`}
-            >
-              Create Account
-            </button>
-          </div>
+          {/* Tabs */}
+          <Tabs
+            value={tabIndex}
+            onChange={(_, val) => {
+              setTabIndex(val);
+              setErrorMsg(null);
+              setSuccessMsg(null);
+            }}
+            variant="fullWidth"
+            sx={{
+              mb: 3,
+              borderBottom: '1px solid #e2e8f0',
+              '& .MuiTab-root': { fontWeight: 700, fontSize: '0.875rem' },
+            }}
+          >
+            <Tab label="Sign In" />
+            <Tab label="Create Account" />
+          </Tabs>
 
+          {/* Feedback Banners */}
           {successMsg && (
-            <Alert
-              message={successMsg}
-              type="success"
-              showIcon
-              icon={<CheckCircle2 className="w-4 h-4 text-emerald-600" />}
-              className="mb-5 rounded-lg text-xs"
-            />
+            <Alert icon={<CheckCircle fontSize="inherit" />} severity="success" sx={{ mb: 2.5, borderRadius: 2 }}>
+              {successMsg}
+            </Alert>
           )}
 
           {errorMsg && (
-            <Alert message={errorMsg} type="error" showIcon className="mb-5 rounded-lg text-xs" />
+            <Alert severity="error" sx={{ mb: 2.5, borderRadius: 2 }}>
+              {errorMsg}
+            </Alert>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {!isLogin && (
-              <>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Full Name</label>
-                  <Input
-                    prefix={<UserIcon className="w-4 h-4 text-slate-400 mr-1" />}
+          {/* Form */}
+          <form onSubmit={handleSubmit}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {!isLogin && (
+                <>
+                  <TextField
+                    label="Full Name"
+                    size="small"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    placeholder="Sarah Jenkins"
                     required
-                    size="large"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Person sx={{ color: '#94a3b8', fontSize: 20 }} />
+                        </InputAdornment>
+                      ),
+                    }}
                   />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Organization Role</label>
-                  <Select
-                    value={role}
-                    onChange={setRole}
-                    className="w-full"
-                    size="large"
-                    options={[
-                      { value: 'HR_MANAGER', label: 'HR Manager' },
-                      { value: 'COMPENSATION_ANALYST', label: 'Compensation Analyst' },
-                      { value: 'EXECUTIVE', label: 'Executive / Leadership' },
-                      { value: 'HR_ADMIN', label: 'HR Administrator' },
-                    ]}
-                  />
-                </div>
-              </>
-            )}
 
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Work Email</label>
-              <Input
+                  <FormControl size="small" fullWidth>
+                    <InputLabel>Organization Role</InputLabel>
+                    <Select
+                      value={role}
+                      label="Organization Role"
+                      onChange={(e) => setRole(e.target.value)}
+                    >
+                      <MenuItem value="HR_MANAGER">HR Manager</MenuItem>
+                      <MenuItem value="COMPENSATION_ANALYST">Compensation Analyst</MenuItem>
+                      <MenuItem value="EXECUTIVE">Executive / Leadership</MenuItem>
+                      <MenuItem value="HR_ADMIN">HR Administrator</MenuItem>
+                    </Select>
+                  </FormControl>
+                </>
+              )}
+
+              <TextField
+                label="Work Email"
                 type="email"
-                prefix={<Mail className="w-4 h-4 text-slate-400 mr-1" />}
+                size="small"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="name@acme.com"
                 required
-                size="large"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Mail sx={{ color: '#94a3b8', fontSize: 20 }} />
+                    </InputAdornment>
+                  ),
+                }}
               />
-            </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Password</label>
-              <Input.Password
-                prefix={<Lock className="w-4 h-4 text-slate-400 mr-1" />}
+              <TextField
+                label="Password"
+                type={showPassword ? 'text' : 'password'}
+                size="small"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
                 required
-                size="large"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Lock sx={{ color: '#94a3b8', fontSize: 20 }} />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton size="small" onClick={() => setShowPassword(!showPassword)}>
+                        {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
               />
-            </div>
 
-            <Button
-              type="primary"
-              htmlType="submit"
-              loading={loading}
-              className="w-full h-11 text-sm font-semibold rounded-xl bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-500/20 mt-2 flex items-center justify-center space-x-2"
-            >
-              <span>{isLogin ? 'Sign In to ACME HRIS' : 'Complete Registration'}</span>
-              <ArrowRight className="w-4 h-4 ml-1" />
-            </Button>
+              <Button
+                type="submit"
+                variant="contained"
+                size="large"
+                disabled={loading}
+                endIcon={<ArrowForward />}
+                sx={{
+                  py: 1.25,
+                  mt: 1,
+                  fontSize: '0.9375rem',
+                  borderRadius: 2.5,
+                  fontWeight: 700,
+                }}
+              >
+                {loading ? 'Authenticating...' : isLogin ? 'Sign In to HRIS Portal' : 'Complete Registration'}
+              </Button>
+            </Box>
           </form>
-        </div>
-      </div>
-    </div>
+        </CardContent>
+      </Card>
+    </Box>
   );
 };

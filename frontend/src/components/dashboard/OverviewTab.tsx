@@ -15,15 +15,34 @@ import {
   JobLevelStats,
 } from '../../types';
 import {
-  DollarSign,
-  Users,
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  Grid,
+  LinearProgress,
+  Chip,
+  CircularProgress,
+  Avatar,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Button,
+} from '@mui/material';
+import {
+  AttachMoney,
+  People,
   TrendingUp,
-  ShieldCheck,
-  Globe2,
-  Building2,
-  BarChart3,
-  ArrowUpRight,
-} from 'lucide-react';
+  Security,
+  Public,
+  CorporateFare,
+  BarChart as BarChartIcon,
+  NorthEast,
+} from '@mui/icons-material';
 import {
   ResponsiveContainer,
   BarChart,
@@ -33,7 +52,6 @@ import {
   Tooltip as RechartsTooltip,
   CartesianGrid,
 } from 'recharts';
-import { Spin, Tag } from 'antd';
 
 interface OverviewTabProps {
   onNavigateToDirectory: (filter?: { department?: string; country?: string; band_status?: string }) => void;
@@ -75,15 +93,21 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ onNavigateToDirectory 
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <Spin size="large" />
-        <p className="mt-4 text-sm text-slate-500 font-medium">Aggregating 10,000 employee records...</p>
-      </div>
+      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
+        <CircularProgress size={48} sx={{ color: '#2563eb' }} />
+        <Typography variant="body2" sx={{ mt: 2, color: '#64748b', fontWeight: 600 }}>
+          Aggregating compensation records...
+        </Typography>
+      </Box>
     );
   }
 
   if (!overview) {
-    return <div className="text-center py-12 text-slate-500">Failed to load compensation overview.</div>;
+    return (
+      <Box sx={{ textAlign: 'center', py: 8 }}>
+        <Typography color="text.secondary">Failed to load compensation overview.</Typography>
+      </Box>
+    );
   }
 
   const complianceRate = overview.total_employees > 0
@@ -91,282 +115,386 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ onNavigateToDirectory 
     : '100';
 
   return (
-    <div className="space-y-6 pb-12">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-slate-900 to-indigo-950 p-6 rounded-2xl text-white shadow-xl">
-        <div>
-          <div className="flex items-center space-x-2">
-            <span className="text-xs font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30">
-              Live Executive Dashboard
-            </span>
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold mt-2 tracking-tight text-white">
-            ACME Global Compensation Overview
-          </h1>
-          <p className="text-sm text-slate-300 mt-1">
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, pb: 6 }}>
+      {/* Executive Hero Banner */}
+      <Paper
+        elevation={0}
+        sx={{
+          p: { xs: 3, md: 4 },
+          borderRadius: 4,
+          background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)',
+          color: '#ffffff',
+          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
+          display: 'flex',
+          flexDirection: { xs: 'column', md: 'row' },
+          alignItems: { xs: 'flex-start', md: 'center' },
+          justifyContent: 'space-between',
+          gap: 2,
+        }}
+      >
+        <Box>
+          <Chip
+            label="Executive Dashboard"
+            size="small"
+            sx={{
+              backgroundColor: 'rgba(59, 130, 246, 0.2)',
+              color: '#93c5fd',
+              border: '1px solid rgba(147, 197, 253, 0.3)',
+              fontWeight: 700,
+              fontSize: '0.6875rem',
+              mb: 1.5,
+            }}
+          />
+          <Typography variant="h5" sx={{ fontWeight: 800, color: '#ffffff', letterSpacing: '-0.02em' }}>
+            Global Compensation Overview
+          </Typography>
+          <Typography variant="body2" sx={{ color: '#cbd5e1', mt: 0.5 }}>
             Real-time multi-currency pay intelligence, department allocations, and band compliance.
-          </p>
-        </div>
+          </Typography>
+        </Box>
 
-        <div className="flex items-center space-x-3 bg-white/10 backdrop-blur-md p-3.5 rounded-xl border border-white/10">
-          <div className="text-right">
-            <div className="text-xs text-slate-300">Active Viewing Currency</div>
-            <div className="text-lg font-bold text-white tracking-wide">{selectedCurrency}</div>
-          </div>
-          <div className="w-10 h-10 rounded-lg bg-blue-500 flex items-center justify-center text-white shadow">
-            <DollarSign className="w-5 h-5" />
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-5 rounded-xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Annual Payroll</span>
-            <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
-              <DollarSign className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="mt-3">
-            <div className="text-2xl font-black text-slate-900 tracking-tight">
-              {formatMoney(overview.total_payroll_usd)}
-            </div>
-            <div className="text-xs text-slate-500 mt-1 flex items-center space-x-1">
-              <span>Includes Base + Target Bonuses + Equity</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white p-5 rounded-xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Headcount</span>
-            <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
-              <Users className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="mt-3">
-            <div className="text-2xl font-black text-slate-900 tracking-tight">
-              {overview.total_employees.toLocaleString()}
-            </div>
-            <div className="text-xs text-slate-500 mt-1 flex items-center space-x-1.5">
-              <span className="font-semibold text-emerald-600">{overview.active_employees} Active</span>
-              <span>•</span>
-              <span className="text-slate-400">{overview.inactive_employees} Inactive</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white p-5 rounded-xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Median Base Pay</span>
-            <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
-              <TrendingUp className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="mt-3">
-            <div className="text-2xl font-black text-slate-900 tracking-tight">
-              {formatMoney(overview.median_salary_usd)}
-            </div>
-            <div className="text-xs text-slate-500 mt-1">
-              Mean: <span className="font-semibold text-slate-700">{formatMoney(overview.mean_salary_usd)}</span>
-            </div>
-          </div>
-        </div>
-
-        <div
-          onClick={() => onNavigateToDirectory({ band_status: 'UNDERPAID' })}
-          className="bg-white p-5 rounded-xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow cursor-pointer group"
+        <Paper
+          elevation={0}
+          sx={{
+            p: 2,
+            borderRadius: 3,
+            backgroundColor: 'rgba(255, 255, 255, 0.08)',
+            backdropFilter: 'blur(12px)',
+            border: '1px solid rgba(255, 255, 255, 0.12)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 2,
+          }}
         >
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Band Compliance</span>
-            <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center group-hover:scale-105 transition-transform">
-              <ShieldCheck className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="mt-3">
-            <div className="flex items-baseline justify-between">
-              <span className="text-2xl font-black text-slate-900 tracking-tight">{complianceRate}%</span>
-              <span className="text-xs font-semibold text-amber-600 flex items-center">
-                {overview.underpaid_count + overview.overpaid_count} Outliers
-                <ArrowUpRight className="w-3.5 h-3.5 ml-0.5" />
-              </span>
-            </div>
-            <div className="w-full bg-slate-100 rounded-full h-1.5 mt-2 overflow-hidden">
-              <div
-                className="bg-emerald-500 h-1.5 rounded-full"
-                style={{ width: `${complianceRate}%` }}
+          <Box sx={{ textAlign: 'right' }}>
+            <Typography variant="caption" sx={{ color: '#94a3b8', display: 'block', fontWeight: 600 }}>
+              Active Viewing Currency
+            </Typography>
+            <Typography variant="h6" sx={{ color: '#ffffff', fontWeight: 800 }}>
+              {selectedCurrency}
+            </Typography>
+          </Box>
+          <Avatar sx={{ bgcolor: '#2563eb', width: 44, height: 44 }}>
+            <AttachMoney />
+          </Avatar>
+        </Paper>
+      </Paper>
+
+      {/* KPI Cards Grid */}
+      <Grid container spacing={2.5}>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card sx={{ height: '100%', borderRadius: 3 }}>
+            <CardContent sx={{ p: 2.5 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                <Typography variant="caption" sx={{ fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Total Annual Payroll
+                </Typography>
+                <Avatar sx={{ bgcolor: '#ecfdf5', color: '#059669', width: 36, height: 36 }}>
+                  <AttachMoney fontSize="small" />
+                </Avatar>
+              </Box>
+              <Typography variant="h5" sx={{ fontWeight: 800, color: '#0f172a' }}>
+                {formatMoney(overview.total_payroll_usd)}
+              </Typography>
+              <Typography variant="caption" sx={{ color: '#64748b', mt: 0.5, display: 'block' }}>
+                Includes Base + Target Bonus + Equity
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12} sm={6} md={3}>
+          <Card sx={{ height: '100%', borderRadius: 3 }}>
+            <CardContent sx={{ p: 2.5 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                <Typography variant="caption" sx={{ fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Total Headcount
+                </Typography>
+                <Avatar sx={{ bgcolor: '#eff6ff', color: '#2563eb', width: 36, height: 36 }}>
+                  <People fontSize="small" />
+                </Avatar>
+              </Box>
+              <Typography variant="h5" sx={{ fontWeight: 800, color: '#0f172a' }}>
+                {overview.total_employees.toLocaleString()}
+              </Typography>
+              <Typography variant="caption" sx={{ color: '#64748b', mt: 0.5, display: 'block' }}>
+                <span style={{ color: '#059669', fontWeight: 700 }}>{overview.active_employees} Active</span> • {overview.inactive_employees} Inactive
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12} sm={6} md={3}>
+          <Card sx={{ height: '100%', borderRadius: 3 }}>
+            <CardContent sx={{ p: 2.5 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                <Typography variant="caption" sx={{ fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Median Base Pay
+                </Typography>
+                <Avatar sx={{ bgcolor: '#eef2ff', color: '#4f46e5', width: 36, height: 36 }}>
+                  <TrendingUp fontSize="small" />
+                </Avatar>
+              </Box>
+              <Typography variant="h5" sx={{ fontWeight: 800, color: '#0f172a' }}>
+                {formatMoney(overview.median_salary_usd)}
+              </Typography>
+              <Typography variant="caption" sx={{ color: '#64748b', mt: 0.5, display: 'block' }}>
+                Mean: <strong>{formatMoney(overview.mean_salary_usd)}</strong>
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12} sm={6} md={3}>
+          <Card
+            onClick={() => onNavigateToDirectory({ band_status: 'UNDERPAID' })}
+            sx={{
+              height: '100%',
+              borderRadius: 3,
+              cursor: 'pointer',
+              transition: 'transform 0.2s, box-shadow 0.2s',
+              '&:hover': { transform: 'translateY(-2px)', boxShadow: '0 12px 20px -8px rgba(0,0,0,0.1)' },
+            }}
+          >
+            <CardContent sx={{ p: 2.5 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                <Typography variant="caption" sx={{ fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Band Compliance
+                </Typography>
+                <Avatar sx={{ bgcolor: '#fef3c7', color: '#d97706', width: 36, height: 36 }}>
+                  <Security fontSize="small" />
+                </Avatar>
+              </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                <Typography variant="h5" sx={{ fontWeight: 800, color: '#0f172a' }}>
+                  {complianceRate}%
+                </Typography>
+                <Chip
+                  icon={<NorthEast sx={{ fontSize: '14px !important' }} />}
+                  label={`${overview.underpaid_count + overview.overpaid_count} Outliers`}
+                  size="small"
+                  color="warning"
+                  sx={{ height: 22, fontSize: '0.6875rem', fontWeight: 700 }}
+                />
+              </Box>
+              <LinearProgress
+                variant="determinate"
+                value={parseFloat(complianceRate)}
+                color="success"
+                sx={{ height: 6, borderRadius: 3, mt: 1.5, bgcolor: '#f1f5f9' }}
               />
-            </div>
-          </div>
-        </div>
-      </div>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h3 className="font-bold text-slate-900 text-base flex items-center space-x-2">
-                <BarChart3 className="w-4 h-4 text-blue-600" />
-                <span>Compensation Distribution (10k Employees)</span>
-              </h3>
-              <p className="text-xs text-slate-500">Employee count across total compensation tiers</p>
-            </div>
-          </div>
+      {/* Charts Grid */}
+      <Grid container spacing={2.5}>
+        <Grid item xs={12} lg={6}>
+          <Card sx={{ borderRadius: 3, height: '100%' }}>
+            <CardContent sx={{ p: 3 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                <BarChartIcon sx={{ color: '#2563eb', fontSize: 20 }} />
+                <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#0f172a' }}>
+                  Compensation Distribution
+                </Typography>
+              </Box>
+              <Typography variant="caption" sx={{ color: '#64748b', display: 'block', mb: 3 }}>
+                Employee count across total compensation tiers
+              </Typography>
 
-          <div className="h-72 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={distribution} margin={{ top: 10, right: 10, left: -10, bottom: 25 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis
-                  dataKey="range_label"
-                  angle={-30}
-                  textAnchor="end"
-                  tick={{ fontSize: 11, fill: '#64748b' }}
-                  height={50}
-                />
-                <YAxis tick={{ fontSize: 11, fill: '#64748b' }} />
-                <RechartsTooltip
-                  formatter={(value: any, _name: any, props: any) => [
-                    `${value.toLocaleString()} employees (${props.payload.percentage}%)`,
-                    'Count',
-                  ]}
-                  contentStyle={{
-                    backgroundColor: '#0f172a',
-                    borderRadius: '8px',
-                    color: '#fff',
-                    fontSize: '12px',
-                    border: 'none',
-                  }}
-                />
-                <Bar dataKey="count" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
+              <Box sx={{ height: 280, width: '100%' }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={distribution} margin={{ top: 10, right: 10, left: -10, bottom: 25 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                    <XAxis
+                      dataKey="range_label"
+                      angle={-30}
+                      textAnchor="end"
+                      tick={{ fontSize: 11, fill: '#64748b' }}
+                      height={50}
+                    />
+                    <YAxis tick={{ fontSize: 11, fill: '#64748b' }} />
+                    <RechartsTooltip
+                      formatter={(value: any, _name: any, props: any) => [
+                        `${value.toLocaleString()} employees (${props.payload.percentage}%)`,
+                        'Count',
+                      ]}
+                      contentStyle={{
+                        backgroundColor: '#0f172a',
+                        borderRadius: '10px',
+                        color: '#fff',
+                        fontSize: '12px',
+                        border: 'none',
+                        boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
+                      }}
+                    />
+                    <Bar dataKey="count" fill="#2563eb" radius={[6, 6, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
 
-        <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h3 className="font-bold text-slate-900 text-base flex items-center space-x-2">
-                <Building2 className="w-4 h-4 text-indigo-600" />
-                <span>Department Average Total Compensation</span>
-              </h3>
-              <p className="text-xs text-slate-500">Benchmark comparison converted to {selectedCurrency}</p>
-            </div>
-          </div>
+        <Grid item xs={12} lg={6}>
+          <Card sx={{ borderRadius: 3, height: '100%' }}>
+            <CardContent sx={{ p: 3 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                <CorporateFare sx={{ color: '#4f46e5', fontSize: 20 }} />
+                <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#0f172a' }}>
+                  Department Average Compensation
+                </Typography>
+              </Box>
+              <Typography variant="caption" sx={{ color: '#64748b', display: 'block', mb: 3 }}>
+                Benchmark comparison converted to {selectedCurrency}
+              </Typography>
 
-          <div className="h-72 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={deptStats.map((d) => ({
-                  department: d.department,
-                  avg_comp: Math.round(convertFromUsd(d.mean_total_comp_usd)),
-                  headcount: d.employee_count,
-                }))}
-                margin={{ top: 10, right: 10, left: 10, bottom: 25 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis
-                  dataKey="department"
-                  angle={-30}
-                  textAnchor="end"
-                  tick={{ fontSize: 11, fill: '#64748b' }}
-                  height={50}
-                />
-                <YAxis tick={{ fontSize: 11, fill: '#64748b' }} />
-                <RechartsTooltip
-                  formatter={(value: any) => [`${formatMoney(convertFromUsd(value, 'USD'))}`, 'Avg Total Comp']}
-                  contentStyle={{
-                    backgroundColor: '#0f172a',
-                    borderRadius: '8px',
-                    color: '#fff',
-                    fontSize: '12px',
-                    border: 'none',
-                  }}
-                />
-                <Bar dataKey="avg_comp" fill="#6366f1" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      </div>
+              <Box sx={{ height: 280, width: '100%' }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={deptStats.map((d) => ({
+                      department: d.department,
+                      avg_comp: Math.round(convertFromUsd(d.mean_total_comp_usd)),
+                      headcount: d.employee_count,
+                    }))}
+                    margin={{ top: 10, right: 10, left: 10, bottom: 25 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                    <XAxis
+                      dataKey="department"
+                      angle={-30}
+                      textAnchor="end"
+                      tick={{ fontSize: 11, fill: '#64748b' }}
+                      height={50}
+                    />
+                    <YAxis tick={{ fontSize: 11, fill: '#64748b' }} />
+                    <RechartsTooltip
+                      formatter={(value: any) => [`${formatMoney(convertFromUsd(value, 'USD'))}`, 'Avg Total Comp']}
+                      contentStyle={{
+                        backgroundColor: '#0f172a',
+                        borderRadius: '10px',
+                        color: '#fff',
+                        fontSize: '12px',
+                        border: 'none',
+                        boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
+                      }}
+                    />
+                    <Bar dataKey="avg_comp" fill="#4f46e5" radius={[6, 6, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h3 className="font-bold text-slate-900 text-base flex items-center space-x-2">
-                <Globe2 className="w-4 h-4 text-emerald-600" />
-                <span>Global Payroll by Country & Currency</span>
-              </h3>
-              <p className="text-xs text-slate-500">8 regional hubs supporting 10,000 employees</p>
-            </div>
-          </div>
+      {/* Global Spend Table & Level Progression */}
+      <Grid container spacing={2.5}>
+        <Grid item xs={12} lg={8}>
+          <Card sx={{ borderRadius: 3 }}>
+            <CardContent sx={{ p: 3 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                <Public sx={{ color: '#059669', fontSize: 20 }} />
+                <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#0f172a' }}>
+                  Global Payroll by Country & Currency
+                </Typography>
+              </Box>
+              <Typography variant="caption" sx={{ color: '#64748b', display: 'block', mb: 2 }}>
+                8 regional compensation hubs
+              </Typography>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead>
-                <tr className="border-b border-slate-200 text-slate-500 font-semibold bg-slate-50/50">
-                  <th className="py-2.5 px-3">Country</th>
-                  <th className="py-2.5 px-3">Headcount</th>
-                  <th className="py-2.5 px-3">Local Currency</th>
-                  <th className="py-2.5 px-3">Total Spend ({selectedCurrency})</th>
-                  <th className="py-2.5 px-3">Median Pay</th>
-                  <th className="py-2.5 px-3 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {countryStats.map((c) => (
-                  <tr key={c.country} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="py-3 px-3 font-semibold text-slate-900 flex items-center space-x-2">
-                      <span>{c.country}</span>
-                      <Tag color="default" className="text-[10px] m-0">{c.country_code}</Tag>
-                    </td>
-                    <td className="py-3 px-3 text-slate-600">{c.employee_count.toLocaleString()}</td>
-                    <td className="py-3 px-3 font-mono text-slate-600">
-                      {c.currency} {c.total_local_currency.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-                    </td>
-                    <td className="py-3 px-3 font-bold text-slate-900">{formatMoney(c.total_payroll_usd)}</td>
-                    <td className="py-3 px-3 font-semibold text-slate-700">{formatMoney(c.median_base_usd)}</td>
-                    <td className="py-3 px-3 text-right">
-                      <button
-                        onClick={() => onNavigateToDirectory({ country: c.country })}
-                        className="text-xs font-semibold text-blue-600 hover:text-blue-800 hover:underline"
-                      >
-                        View ({c.employee_count})
-                      </button>
-                    </td>
-                  </tr>
+              <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid #f1f5f9', borderRadius: 2 }}>
+                <Table size="small">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Country</TableCell>
+                      <TableCell>Headcount</TableCell>
+                      <TableCell>Local Currency</TableCell>
+                      <TableCell>Total Spend ({selectedCurrency})</TableCell>
+                      <TableCell>Median Pay</TableCell>
+                      <TableCell align="right">Action</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {countryStats.map((c) => (
+                      <TableRow key={c.country} hover>
+                        <TableCell sx={{ fontWeight: 700 }}>
+                          {c.country}{' '}
+                          <Chip label={c.country_code} size="small" sx={{ height: 18, fontSize: '0.625rem', ml: 0.5 }} />
+                        </TableCell>
+                        <TableCell>{c.employee_count.toLocaleString()}</TableCell>
+                        <TableCell sx={{ fontFamily: 'monospace' }}>
+                          {c.currency} {c.total_local_currency.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                        </TableCell>
+                        <TableCell sx={{ fontWeight: 800 }}>{formatMoney(c.total_payroll_usd)}</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>{formatMoney(c.median_base_usd)}</TableCell>
+                        <TableCell align="right">
+                          <Button
+                            size="small"
+                            onClick={() => onNavigateToDirectory({ country: c.country })}
+                            sx={{ fontSize: '0.75rem', fontWeight: 700 }}
+                          >
+                            View ({c.employee_count})
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12} lg={4}>
+          <Card sx={{ borderRadius: 3, height: '100%' }}>
+            <CardContent sx={{ p: 3 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                <TrendingUp sx={{ color: '#7c3aed', fontSize: 20 }} />
+                <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#0f172a' }}>
+                  Job Level Pay Progression
+                </Typography>
+              </Box>
+              <Typography variant="caption" sx={{ color: '#64748b', display: 'block', mb: 2 }}>
+                Base compensation progression by seniority
+              </Typography>
+
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                {jobLevelStats.map((j) => (
+                  <Paper
+                    key={j.job_level}
+                    elevation={0}
+                    sx={{
+                      p: 1.5,
+                      borderRadius: 2,
+                      bgcolor: '#f8fafc',
+                      border: '1px solid #f1f5f9',
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a' }}>
+                        {j.job_level}
+                      </Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 800, color: '#7c3aed' }}>
+                        {formatMoney(j.median_base_usd)}
+                      </Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 0.5 }}>
+                      <Typography variant="caption" sx={{ color: '#64748b' }}>
+                        {j.employee_count.toLocaleString()} employees
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: '#64748b' }}>
+                        Avg Equity: {formatMoney(j.avg_equity_usd)}
+                      </Typography>
+                    </Box>
+                  </Paper>
                 ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
-          <div>
-            <h3 className="font-bold text-slate-900 text-base flex items-center space-x-2 mb-1">
-              <TrendingUp className="w-4 h-4 text-purple-600" />
-              <span>Job Level Pay Progression</span>
-            </h3>
-            <p className="text-xs text-slate-500 mb-4">Base compensation progression by seniority level</p>
-
-            <div className="space-y-3.5">
-              {jobLevelStats.map((j) => (
-                <div key={j.job_level} className="p-2.5 rounded-lg bg-slate-50 border border-slate-100">
-                  <div className="flex justify-between items-center text-xs">
-                    <span className="font-bold text-slate-800">{j.job_level}</span>
-                    <span className="font-bold text-purple-700">{formatMoney(j.median_base_usd)}</span>
-                  </div>
-                  <div className="flex justify-between text-[11px] text-slate-500 mt-1">
-                    <span>{j.employee_count.toLocaleString()} employees</span>
-                    <span>Avg Equity: {formatMoney(j.avg_equity_usd)}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+    </Box>
   );
 };

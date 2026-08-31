@@ -1,20 +1,34 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useCurrency } from '../../context/CurrencyContext';
 import {
-  DollarSign,
-  Users,
-  BarChart3,
-  HelpCircle,
-  Scale,
-  LogOut,
-  Globe2,
+  AppBar,
+  Toolbar,
+  Typography,
+  Box,
+  Button,
   Menu,
-  ChevronDown,
-  Sparkles,
-} from 'lucide-react';
-import { Select, Tag, Tooltip, Dropdown } from 'antd';
-import type { MenuProps } from 'antd';
+  MenuItem,
+  Chip,
+  IconButton,
+  Tooltip,
+  Select,
+  FormControl,
+  Avatar,
+  ListItemIcon,
+} from '@mui/material';
+import {
+  AttachMoney,
+  People,
+  BarChart,
+  HelpOutline,
+  Balance,
+  Logout,
+  Public,
+  Menu as MenuIcon,
+  KeyboardArrowDown,
+  AutoAwesome,
+} from '@mui/icons-material';
 
 interface NavbarProps {
   activeTab: string;
@@ -24,73 +38,56 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
   const { user, logout } = useAuth();
   const { selectedCurrency, setSelectedCurrency } = useCurrency();
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const navItems = [
     {
       id: 'overview',
       label: 'Executive Overview',
       desc: 'Payroll KPIs, pay distribution & department breakdown',
-      icon: BarChart3,
+      icon: BarChart,
+      color: '#2563eb',
     },
     {
       id: 'directory',
       label: 'Employee Directory',
       desc: 'Directory table, multi-facet filtering & salary adjustments',
-      icon: Users,
+      icon: People,
+      color: '#059669',
     },
     {
       id: 'insights',
       label: 'Strategic HR Q&A',
       desc: 'Analytical answers to executive compensation questions',
-      icon: HelpCircle,
+      icon: HelpOutline,
+      color: '#7c3aed',
     },
     {
       id: 'parity',
       label: 'Pay Parity & Bands',
       desc: 'Gender parity ratios & salary band governance',
-      icon: Scale,
+      icon: Balance,
+      color: '#db2777',
     },
   ];
 
   const currentItem = navItems.find((item) => item.id === activeTab) || navItems[0];
   const CurrentIcon = currentItem.icon;
 
-  const menuItems: MenuProps['items'] = navItems.map((item) => {
-    const Icon = item.icon;
-    const isSelected = activeTab === item.id;
-    return {
-      key: item.id,
-      label: (
-        <div
-          onClick={() => setActiveTab(item.id)}
-          className={`flex items-start space-x-3 p-2.5 rounded-xl transition-all cursor-pointer ${
-            isSelected ? 'bg-blue-50/80 text-blue-800 font-semibold' : 'hover:bg-slate-50 text-slate-700'
-          }`}
-        >
-          <div
-            className={`p-2 rounded-lg shrink-0 ${
-              isSelected ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500'
-            }`}
-          >
-            <Icon className="w-4 h-4" />
-          </div>
-          <div>
-            <div className="flex items-center space-x-2">
-              <span className="text-sm font-bold">{item.label}</span>
-              {isSelected && (
-                <Tag color="blue" className="text-[10px] m-0 font-semibold border-0">
-                  Active
-                </Tag>
-              )}
-            </div>
-            <p className="text-xs text-slate-400 font-normal mt-0.5 max-w-xs">{item.desc}</p>
-          </div>
-        </div>
-      ),
-    };
-  });
+  const handleOpenMenu = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
 
-  const currencyOptions = [
+  const handleCloseMenu = () => {
+    setAnchorEl(null);
+  };
+
+  const handleSelectTab = (id: string) => {
+    setActiveTab(id);
+    handleCloseMenu();
+  };
+
+  const currencies = [
     { value: 'USD', label: '🇺🇸 USD ($)' },
     { value: 'EUR', label: '🇪🇺 EUR (€)' },
     { value: 'GBP', label: '🇬🇧 GBP (£)' },
@@ -102,88 +99,221 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
   ];
 
   return (
-    <header className="sticky top-0 z-40 bg-white border-b border-slate-200 shadow-xs">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
-              <DollarSign className="w-6 h-6" />
-            </div>
-            <div>
-              <div className="flex items-center space-x-2">
-                <span className="font-bold text-lg text-slate-900 tracking-tight">ACME</span>
-                <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">
-                  Global Compensation
-                </span>
-              </div>
-            </div>
-          </div>
+    <AppBar
+      position="sticky"
+      elevation={0}
+      sx={{
+        backgroundColor: '#ffffff',
+        borderBottom: '1px solid #e2e8f0',
+        color: '#0f172a',
+      }}
+    >
+      <Toolbar sx={{ maxWidth: 1280, width: '100%', mx: 'auto', px: { xs: 2, sm: 3, md: 4 }, justifyContent: 'space-between' }}>
+        {/* Brand */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <Avatar
+            variant="rounded"
+            sx={{
+              background: 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)',
+              color: '#ffffff',
+              width: 40,
+              height: 40,
+              boxShadow: '0 4px 12px rgba(37, 99, 235, 0.25)',
+            }}
+          >
+            <AttachMoney fontSize="medium" />
+          </Avatar>
+          <Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a', lineHeight: 1 }}>
+                PayHub
+              </Typography>
+              <Chip
+                label="Global Compensation"
+                size="small"
+                sx={{
+                  backgroundColor: '#eff6ff',
+                  color: '#1d4ed8',
+                  fontWeight: 700,
+                  fontSize: '0.6875rem',
+                  height: 22,
+                }}
+              />
+            </Box>
+          </Box>
+        </Box>
 
-          {/* Center: Interactive Dropdown Menu */}
-          <div className="flex items-center">
-            <Dropdown
-              menu={{ items: menuItems }}
-              trigger={['click']}
-              placement="bottom"
-              dropdownRender={(menu) => (
-                <div className="bg-white rounded-2xl shadow-2xl border border-slate-200/80 p-2 min-w-[340px]">
-                  <div className="px-3 py-2 border-b border-slate-100 flex items-center justify-between mb-1">
-                    <div className="flex items-center space-x-1.5 text-xs font-bold text-slate-800 uppercase tracking-wider">
-                      <Sparkles className="w-3.5 h-3.5 text-blue-600" />
-                      <span>Select Module / View</span>
-                    </div>
-                  </div>
-                  {menu}
-                </div>
-              )}
-            >
-              <button className="flex items-center space-x-2.5 px-4 py-2 bg-slate-100/90 hover:bg-slate-200/80 text-slate-800 rounded-xl font-semibold text-sm transition-all border border-slate-200/60 shadow-xs group">
-                <Menu className="w-4 h-4 text-blue-600 group-hover:scale-110 transition-transform" />
-                <div className="flex items-center space-x-2">
-                  <CurrentIcon className="w-4 h-4 text-slate-600" />
-                  <span>{currentItem.label}</span>
-                </div>
-                <ChevronDown className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600 transition-transform" />
-              </button>
-            </Dropdown>
-          </div>
+        {/* Center Menu Dropdown */}
+        <Box>
+          <Button
+            variant="outlined"
+            onClick={handleOpenMenu}
+            startIcon={<MenuIcon sx={{ color: '#2563eb', fontSize: 20 }} />}
+            endIcon={<KeyboardArrowDown sx={{ color: '#64748b', fontSize: 18 }} />}
+            sx={{
+              borderColor: '#e2e8f0',
+              backgroundColor: '#f8fafc',
+              color: '#0f172a',
+              fontWeight: 700,
+              fontSize: '0.875rem',
+              px: 2.25,
+              py: 0.85,
+              borderRadius: 3,
+              textTransform: 'none',
+              whiteSpace: 'nowrap',
+              '&:hover': {
+                backgroundColor: '#f1f5f9',
+                borderColor: '#cbd5e1',
+              },
+            }}
+          >
+            <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}>
+              <CurrentIcon sx={{ fontSize: 18, color: currentItem.color }} />
+              <span>{currentItem.label}</span>
+            </Box>
+          </Button>
 
-          {/* Right: Currency & Profile */}
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-1.5 bg-slate-100 rounded-lg p-1">
-              <Globe2 className="w-4 h-4 text-slate-500 ml-1.5" />
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={handleCloseMenu}
+            PaperProps={{
+              sx: {
+                width: { xs: 340, sm: 400 },
+                maxWidth: '95vw',
+                borderRadius: 4,
+                boxShadow: '0 20px 40px rgba(0,0,0,0.12)',
+                border: '1px solid #f1f5f9',
+                p: 1.25,
+              },
+            }}
+            transformOrigin={{ horizontal: 'center', vertical: 'top' }}
+            anchorOrigin={{ horizontal: 'center', vertical: 'bottom' }}
+          >
+            {/* Header Section */}
+            <Box sx={{ px: 2, py: 1.25, display: 'flex', alignItems: 'center', gap: 1, borderBottom: '1px solid #f1f5f9', mb: 1 }}>
+              <AutoAwesome sx={{ fontSize: 16, color: '#2563eb' }} />
+              <Typography variant="caption" sx={{ fontWeight: 800, color: '#475569', letterSpacing: '0.05em' }}>
+                SELECT WORKSPACE MODULE
+              </Typography>
+            </Box>
+
+            {/* Menu Items */}
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isSelected = activeTab === item.id;
+              return (
+                <MenuItem
+                  key={item.id}
+                  onClick={() => handleSelectTab(item.id)}
+                  sx={{
+                    borderRadius: 2.5,
+                    mb: 0.75,
+                    p: 1.5,
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    whiteSpace: 'normal',
+                    backgroundColor: isSelected ? '#eff6ff' : 'transparent',
+                    '&:hover': {
+                      backgroundColor: isSelected ? '#dbeafe' : '#f8fafc',
+                    },
+                  }}
+                >
+                  <ListItemIcon sx={{ minWidth: 44, mr: 1, mt: 0.25 }}>
+                    <Avatar
+                      sx={{
+                        width: 36,
+                        height: 36,
+                        backgroundColor: isSelected ? item.color : '#f1f5f9',
+                        color: isSelected ? '#ffffff' : '#64748b',
+                      }}
+                    >
+                      <Icon fontSize="small" />
+                    </Avatar>
+                  </ListItemIcon>
+
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
+                      <Typography variant="subtitle2" sx={{ fontWeight: isSelected ? 700 : 600, color: isSelected ? '#1d4ed8' : '#0f172a' }}>
+                        {item.label}
+                      </Typography>
+                      {isSelected && (
+                        <Chip label="Active" size="small" color="primary" sx={{ height: 20, fontSize: '0.625rem', fontWeight: 800, px: 0.5 }} />
+                      )}
+                    </Box>
+                    <Typography variant="caption" sx={{ color: '#64748b', display: 'block', mt: 0.25, lineHeight: 1.35 }}>
+                      {item.desc}
+                    </Typography>
+                  </Box>
+                </MenuItem>
+              );
+            })}
+          </Menu>
+        </Box>
+
+        {/* Right Currency & User Profile */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: '#f8fafc', px: 1, py: 0.25, borderRadius: 2.5, border: '1px solid #e2e8f0' }}>
+            <Public sx={{ fontSize: 18, color: '#64748b', mr: 0.5 }} />
+            <FormControl variant="standard" size="small">
               <Select
                 value={selectedCurrency}
-                onChange={setSelectedCurrency}
-                options={currencyOptions}
-                bordered={false}
-                className="w-32 text-xs font-semibold"
-                dropdownMatchSelectWidth={false}
-              />
-            </div>
+                onChange={(e) => setSelectedCurrency(e.target.value)}
+                disableUnderline
+                sx={{
+                  fontWeight: 700,
+                  fontSize: '0.8125rem',
+                  color: '#0f172a',
+                  '& .MuiSelect-select': { py: 0.5 },
+                }}
+              >
+                {currencies.map((c) => (
+                  <MenuItem key={c.value} value={c.value} sx={{ fontSize: '0.8125rem', fontWeight: 600 }}>
+                    {c.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
 
-            {user && (
-              <div className="flex items-center space-x-3 pl-3 border-l border-slate-200">
-                <div className="text-right hidden sm:block">
-                  <div className="text-xs font-bold text-slate-900 leading-tight">{user.full_name}</div>
-                  <Tag color="blue" className="text-[10px] m-0 border-0 font-medium">
-                    {user.role.replace('_', ' ')}
-                  </Tag>
-                </div>
-                <Tooltip title="Log out">
-                  <button
-                    onClick={logout}
-                    className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                  >
-                    <LogOut className="w-4 h-4" />
-                  </button>
-                </Tooltip>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </header>
+          {user && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, pl: 1.5, borderLeft: '1px solid #e2e8f0' }}>
+              <Box sx={{ display: { xs: 'none', sm: 'block' }, textAlign: 'right' }}>
+                <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a', lineHeight: 1.1 }}>
+                  {user.full_name}
+                </Typography>
+                <Chip
+                  label={user.role.replace('_', ' ')}
+                  size="small"
+                  sx={{
+                    height: 18,
+                    fontSize: '0.625rem',
+                    fontWeight: 700,
+                    backgroundColor: '#f1f5f9',
+                    color: '#475569',
+                    mt: 0.25,
+                  }}
+                />
+              </Box>
+
+              <Tooltip title="Log out">
+                <IconButton
+                  onClick={logout}
+                  size="small"
+                  sx={{
+                    color: '#64748b',
+                    bgcolor: '#f8fafc',
+                    border: '1px solid #e2e8f0',
+                    '&:hover': { color: '#ef4444', bgcolor: '#fef2f2', borderColor: '#fecaca' },
+                  }}
+                >
+                  <Logout fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </Box>
+          )}
+        </Box>
+      </Toolbar>
+    </AppBar>
   );
 };

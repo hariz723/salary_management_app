@@ -4,10 +4,27 @@ import { GenderPayGapAnalysis, BandComplianceSummary, OutlierEmployee } from '..
 import { useCurrency } from '../../context/CurrencyContext';
 import { SalaryAdjustModal } from '../directory/SalaryAdjustModal';
 import {
-  Scale,
-  AlertTriangle,
-  Edit3,
-} from 'lucide-react';
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  Grid,
+  Chip,
+  CircularProgress,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Button,
+} from '@mui/material';
+import {
+  Balance,
+  Edit,
+  WarningAmber,
+} from '@mui/icons-material';
 import {
   ResponsiveContainer,
   BarChart,
@@ -18,7 +35,6 @@ import {
   CartesianGrid,
   Legend,
 } from 'recharts';
-import { Tag, Spin, Table } from 'antd';
 
 export const PayParityTab: React.FC = () => {
   const { formatMoney, convertFromUsd, selectedCurrency } = useCurrency();
@@ -46,240 +62,259 @@ export const PayParityTab: React.FC = () => {
 
   if (loading || !genderData || !bandData) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[50vh]">
-        <Spin size="large" />
-        <p className="mt-3 text-xs text-slate-500">Analyzing pay parity and band deviations...</p>
-      </div>
+      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '50vh' }}>
+        <CircularProgress size={40} sx={{ color: '#2563eb' }} />
+        <Typography variant="body2" sx={{ mt: 2, color: '#64748b' }}>
+          Analyzing pay parity and band deviations...
+        </Typography>
+      </Box>
     );
   }
 
-  const outlierColumns = [
-    {
-      title: 'Employee',
-      key: 'emp',
-      render: (_: any, r: OutlierEmployee) => (
-        <div>
-          <div className="font-bold text-slate-900 text-xs">{r.name}</div>
-          <div className="text-[10px] font-mono text-slate-400">{r.employee_code}</div>
-        </div>
-      ),
-    },
-    {
-      title: 'Dept & Level',
-      key: 'dept',
-      render: (_: any, r: OutlierEmployee) => (
-        <div className="text-xs">
-          <div className="font-medium text-slate-800">{r.department}</div>
-          <Tag color="purple" className="text-[10px] m-0 py-0 px-1">{r.job_level}</Tag>
-        </div>
-      ),
-    },
-    {
-      title: 'Country',
-      dataIndex: 'country',
-      key: 'country',
-      render: (c: string) => <span className="text-xs text-slate-700">{c}</span>,
-    },
-    {
-      title: `Current Salary (${selectedCurrency})`,
-      dataIndex: 'salary_usd',
-      key: 'salary_usd',
-      render: (s: number) => (
-        <span className="text-xs font-bold text-slate-900">{formatMoney(s)}</span>
-      ),
-    },
-    {
-      title: `Band Range (${selectedCurrency})`,
-      key: 'band_range',
-      render: (_: any, r: OutlierEmployee) => (
-        <div className="text-xs text-slate-500">
-          {formatMoney(r.band_min_usd)} - {formatMoney(r.band_max_usd)}
-        </div>
-      ),
-    },
-    {
-      title: 'Deviation',
-      key: 'deviation',
-      render: (_: any, r: OutlierEmployee) => (
-        <div>
-          <Tag color={r.status === 'UNDERPAID' ? 'red' : 'orange'} className="text-[10px] font-bold border-0">
-            {r.status === 'UNDERPAID' ? `-${r.deviation_percentage}% Below Min` : `+${r.deviation_percentage}% Above Max`}
-          </Tag>
-          <div className="text-[10px] text-slate-500 mt-0.5">{formatMoney(r.deviation_usd)} deviation</div>
-        </div>
-      ),
-    },
-    {
-      title: 'Action',
-      key: 'action',
-      align: 'right' as const,
-      render: (_: any, r: OutlierEmployee) => (
-        <button
-          onClick={() =>
-            setAdjustOutlier({
-              id: r.employee_id,
-              employee_code: r.employee_code,
-              full_name: r.name,
-              job_title: r.job_level,
-              base_salary: r.salary_usd,
-              bonus_percentage: 10,
-              equity_usd: 0,
-              currency: 'USD',
-            })
-          }
-          className="px-2.5 py-1 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-xs flex items-center space-x-1"
-        >
-          <Edit3 className="w-3 h-3" />
-          <span>Rectify</span>
-        </button>
-      ),
-    },
-  ];
+  const parityChartData = genderData.department_breakdown.map((dept) => ({
+    department: dept.department,
+    male: Math.round(convertFromUsd(dept.male_median_usd)),
+    female: Math.round(convertFromUsd(dept.female_median_usd)),
+    ratio: (dept.female_to_male_ratio * 100).toFixed(1),
+  }));
+
+  const femaleStats = genderData.overall_by_gender.find((g) => g.gender === 'Female');
+  const maleStats = genderData.overall_by_gender.find((g) => g.gender === 'Male');
 
   return (
-    <div className="space-y-6 pb-12">
-      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 p-6 rounded-2xl text-white shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center space-x-2">
-            <span className="text-xs font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-pink-500/20 text-pink-300 border border-pink-400/30">
-              Pay Equity & Compensation Governance
-            </span>
-          </div>
-          <h1 className="text-2xl font-extrabold mt-2 tracking-tight">Pay Parity & Salary Band Compliance</h1>
-          <p className="text-sm text-slate-300 mt-1">
-            Ensure gender pay equality and eliminate compensation band deviations across 10,000 employees.
-          </p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
-          <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Overall Gender Parity Ratio</div>
-          <div className="flex items-baseline space-x-2 mt-2">
-            <span className="text-3xl font-black text-slate-900">
-              {(genderData.overall_female_to_male_ratio * 100).toFixed(1)}%
-            </span>
-            <span className="text-xs font-semibold text-emerald-600">Female / Male</span>
-          </div>
-          <p className="text-xs text-slate-500 mt-2">
-            Industry target parity is 95% - 105%. Overall gap stands at {genderData.overall_gap_percentage}%.
-          </p>
-        </div>
-
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
-          <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Band Compliance Rate</div>
-          <div className="flex items-baseline space-x-2 mt-2">
-            <span className="text-3xl font-black text-slate-900">
-              {bandData.compliance_rate_percentage}%
-            </span>
-            <span className="text-xs font-semibold text-slate-500">
-              ({bandData.within_band_count.toLocaleString()} / {bandData.total_employees.toLocaleString()})
-            </span>
-          </div>
-          <div className="w-full bg-slate-100 rounded-full h-1.5 mt-2">
-            <div
-              className="bg-emerald-500 h-1.5 rounded-full"
-              style={{ width: `${bandData.compliance_rate_percentage}%` }}
-            />
-          </div>
-        </div>
-
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
-          <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Budget to Rectify Underpaid</div>
-          <div className="text-3xl font-black text-amber-600 mt-2">
-            {formatMoney(bandData.cost_to_bring_to_minimum_usd)}
-          </div>
-          <p className="text-xs text-slate-500 mt-2">
-            Cost required to bring all {bandData.underpaid_count} underpaid staff to band minimum.
-          </p>
-        </div>
-      </div>
-
-      <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h3 className="font-bold text-slate-900 text-base flex items-center space-x-2">
-              <Scale className="w-4 h-4 text-pink-600" />
-              <span>Department Median Pay: Male vs Female ({selectedCurrency})</span>
-            </h3>
-            <p className="text-xs text-slate-500">Comparison of median compensation across departments</p>
-          </div>
-        </div>
-
-        <div className="h-72 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={genderData.department_breakdown.map((d) => ({
-                department: d.department,
-                male: Math.round(convertFromUsd(d.male_median_usd)),
-                female: Math.round(convertFromUsd(d.female_median_usd)),
-              }))}
-              margin={{ top: 10, right: 10, left: 10, bottom: 25 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-              <XAxis
-                dataKey="department"
-                angle={-30}
-                textAnchor="end"
-                tick={{ fontSize: 11, fill: '#64748b' }}
-                height={50}
-              />
-              <YAxis tick={{ fontSize: 11, fill: '#64748b' }} />
-              <RechartsTooltip
-                formatter={(val: any) => [`${formatMoney(convertFromUsd(val, 'USD'))}`, '']}
-                contentStyle={{
-                  backgroundColor: '#0f172a',
-                  borderRadius: '8px',
-                  color: '#fff',
-                  fontSize: '12px',
-                  border: 'none',
-                }}
-              />
-              <Legend verticalAlign="top" height={36} />
-              <Bar dataKey="male" name="Male Median" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="female" name="Female Median" fill="#ec4899" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-
-      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
-        <div className="p-5 border-b border-slate-100 flex items-center justify-between">
-          <div>
-            <h3 className="font-bold text-slate-900 text-base flex items-center space-x-2">
-              <AlertTriangle className="w-4 h-4 text-amber-500" />
-              <span>Priority Compensation Band Outliers</span>
-            </h3>
-            <p className="text-xs text-slate-500">
-              Employees with compensation outside approved bands requiring HR compensation committee review
-            </p>
-          </div>
-          <Tag color="red" className="font-bold text-xs">
-            {bandData.top_outliers.length} Priority Flagged
-          </Tag>
-        </div>
-
-        <Table
-          columns={outlierColumns}
-          dataSource={bandData.top_outliers}
-          rowKey="employee_id"
-          pagination={{ pageSize: 10, size: 'small' }}
-          scroll={{ x: 800 }}
-          className="text-xs"
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, pb: 6 }}>
+      {/* Header Hero */}
+      <Paper
+        elevation={0}
+        sx={{
+          p: { xs: 3, md: 4 },
+          borderRadius: 4,
+          background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%)',
+          color: '#ffffff',
+          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+        }}
+      >
+        <Chip
+          label="Pay Equity & Governance"
+          size="small"
+          sx={{
+            backgroundColor: 'rgba(236, 72, 153, 0.25)',
+            color: '#fbcfe8',
+            border: '1px solid rgba(244, 114, 182, 0.3)',
+            fontWeight: 700,
+            fontSize: '0.6875rem',
+            mb: 1.5,
+          }}
         />
-      </div>
+        <Typography variant="h5" sx={{ fontWeight: 800, color: '#ffffff' }}>
+          Pay Parity & Salary Band Compliance
+        </Typography>
+        <Typography variant="body2" sx={{ color: '#cbd5e1', mt: 0.5 }}>
+          Ensure gender pay equality and eliminate compensation band deviations across global workforce.
+        </Typography>
+      </Paper>
+
+      {/* Metric Cards */}
+      <Grid container spacing={2.5}>
+        <Grid item xs={12} md={4}>
+          <Card sx={{ borderRadius: 3, height: '100%' }}>
+            <CardContent sx={{ p: 3 }}>
+              <Typography variant="caption" sx={{ fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Overall Gender Parity Ratio
+              </Typography>
+              <Typography variant="h4" sx={{ fontWeight: 800, color: '#0f172a', mt: 1 }}>
+                {(genderData.overall_female_to_male_ratio * 100).toFixed(1)}%
+              </Typography>
+              <Typography variant="caption" sx={{ color: '#64748b', display: 'block', mt: 0.5 }}>
+                Female Median: {formatMoney(femaleStats?.median_total_comp_usd || 0)} vs Male Median: {formatMoney(maleStats?.median_total_comp_usd || 0)}
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12} md={4}>
+          <Card sx={{ borderRadius: 3, height: '100%' }}>
+            <CardContent sx={{ p: 3 }}>
+              <Typography variant="caption" sx={{ fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Band Compliance Rate
+              </Typography>
+              <Typography variant="h4" sx={{ fontWeight: 800, color: '#059669', mt: 1 }}>
+                {bandData.compliance_rate_percentage}%
+              </Typography>
+              <Typography variant="caption" sx={{ color: '#64748b', display: 'block', mt: 0.5 }}>
+                {bandData.within_band_count.toLocaleString()} of {bandData.total_employees.toLocaleString()} employees within band
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12} md={4}>
+          <Card sx={{ borderRadius: 3, height: '100%' }}>
+            <CardContent sx={{ p: 3 }}>
+              <Typography variant="caption" sx={{ fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Budget to Fix Underpaid
+              </Typography>
+              <Typography variant="h4" sx={{ fontWeight: 800, color: '#dc2626', mt: 1 }}>
+                {formatMoney(bandData.cost_to_bring_to_minimum_usd)}
+              </Typography>
+              <Typography variant="caption" sx={{ color: '#64748b', display: 'block', mt: 0.5 }}>
+                Required annual budget to bring {bandData.underpaid_count} outliers to band minimum
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+
+      {/* Gender Comparison Chart */}
+      <Card sx={{ borderRadius: 3 }}>
+        <CardContent sx={{ p: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+            <Balance sx={{ color: '#ec4899', fontSize: 20 }} />
+            <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#0f172a' }}>
+              Department Median Pay by Gender
+            </Typography>
+          </Box>
+          <Typography variant="caption" sx={{ color: '#64748b', display: 'block', mb: 3 }}>
+            Median total compensation ({selectedCurrency}) comparison
+          </Typography>
+
+          <Box sx={{ height: 320, width: '100%' }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={parityChartData} margin={{ top: 10, right: 10, left: 10, bottom: 25 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <XAxis dataKey="department" angle={-30} textAnchor="end" tick={{ fontSize: 11, fill: '#64748b' }} height={50} />
+                <YAxis tick={{ fontSize: 11, fill: '#64748b' }} />
+                <RechartsTooltip
+                  formatter={(value: any, name: any) => [`${formatMoney(convertFromUsd(value, 'USD'))}`, name]}
+                  contentStyle={{
+                    backgroundColor: '#0f172a',
+                    borderRadius: '10px',
+                    color: '#fff',
+                    fontSize: '12px',
+                    border: 'none',
+                  }}
+                />
+                <Legend verticalAlign="top" height={36} />
+                <Bar dataKey="male" name="Male Median" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="female" name="Female Median" fill="#ec4899" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </Box>
+        </CardContent>
+      </Card>
+
+      {/* Priority Outliers Table */}
+      <Card sx={{ borderRadius: 3 }}>
+        <CardContent sx={{ p: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+            <Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <WarningAmber sx={{ color: '#d97706', fontSize: 20 }} />
+                <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#0f172a' }}>
+                  Priority Compensation Band Outliers
+                </Typography>
+              </Box>
+              <Typography variant="caption" sx={{ color: '#64748b' }}>
+                Employees outside approved bands requiring compensation committee review
+              </Typography>
+            </Box>
+
+            <Chip label={`${bandData.top_outliers.length} Flagged`} color="error" size="small" sx={{ fontWeight: 800 }} />
+          </Box>
+
+          <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid #f1f5f9', borderRadius: 2 }}>
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell>Employee</TableCell>
+                  <TableCell>Dept & Level</TableCell>
+                  <TableCell>Country</TableCell>
+                  <TableCell>Current Salary ({selectedCurrency})</TableCell>
+                  <TableCell>Band Range ({selectedCurrency})</TableCell>
+                  <TableCell>Deviation</TableCell>
+                  <TableCell align="right">Action</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {bandData.top_outliers.map((r: OutlierEmployee) => (
+                  <TableRow key={r.employee_id} hover>
+                    <TableCell>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{r.name}</Typography>
+                      <Typography variant="caption" sx={{ color: '#94a3b8', fontFamily: 'monospace' }}>{r.employee_code}</Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2">{r.department}</Typography>
+                      <Chip label={r.job_level} size="small" sx={{ height: 18, fontSize: '0.625rem', bgcolor: '#f3e8ff', color: '#7e22ce', fontWeight: 700 }} />
+                    </TableCell>
+                    <TableCell>{r.country}</TableCell>
+                    <TableCell sx={{ fontWeight: 800 }}>{formatMoney(r.salary_usd)}</TableCell>
+                    <TableCell sx={{ color: '#64748b' }}>
+                      {formatMoney(r.band_min_usd)} - {formatMoney(r.band_max_usd)}
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        label={r.status === 'UNDERPAID' ? `-${r.deviation_percentage}% Below Min` : `+${r.deviation_percentage}% Above Max`}
+                        color={r.status === 'UNDERPAID' ? 'error' : 'warning'}
+                        size="small"
+                        sx={{ height: 20, fontSize: '0.6875rem', fontWeight: 700 }}
+                      />
+                    </TableCell>
+                    <TableCell align="right">
+                      <Button
+                        variant="contained"
+                        size="small"
+                        startIcon={<Edit />}
+                        onClick={() =>
+                          setAdjustOutlier({
+                            id: r.employee_id,
+                            employee_code: r.employee_code,
+                            first_name: r.name.split(' ')[0] || '',
+                            last_name: r.name.split(' ')[1] || '',
+                            full_name: r.name,
+                            email: `${r.employee_code.toLowerCase()}@acme.com`,
+                            gender: 'Not Specified',
+                            country: r.country,
+                            country_code: 'US',
+                            city: 'Global',
+                            department: r.department,
+                            job_title: r.job_level,
+                            job_level: r.job_level,
+                            hire_date: '2024-01-01',
+                            performance_rating: 4.0,
+                            is_active: true,
+                            base_salary: r.salary_usd,
+                            bonus_percentage: 10,
+                            equity_usd: 0,
+                            currency: 'USD',
+                            base_salary_usd: r.salary_usd,
+                            total_compensation_usd: r.salary_usd,
+                            band_status: r.status,
+                          })
+                        }
+                        sx={{ fontSize: '0.75rem', fontWeight: 700, borderRadius: 2 }}
+                      >
+                        Rectify
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </CardContent>
+      </Card>
 
       {adjustOutlier && (
         <SalaryAdjustModal
-          visible={!!adjustOutlier}
+          visible={Boolean(adjustOutlier)}
           employee={adjustOutlier}
           onClose={() => setAdjustOutlier(null)}
           onSuccess={() => {
-            fetchData();
             setAdjustOutlier(null);
+            fetchData();
           }}
         />
       )}
-    </div>
+    </Box>
   );
 };

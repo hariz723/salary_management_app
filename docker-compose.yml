@@ -2,7 +2,7 @@ services:
   
   db:
     image: postgres:16-alpine
-    container_name: acme_salary_db
+    container_name: salary_db
     restart: unless-stopped
     env_file:
       - .env
@@ -24,7 +24,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: acme_salary_backend
+    container_name: salary_backend
     restart: unless-stopped
     env_file:
       - .env
@@ -46,7 +46,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: acme_salary_frontend
+    container_name: salary_frontend
     restart: unless-stopped
     env_file:
       - .env

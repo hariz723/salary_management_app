@@ -10,11 +10,11 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    PROJECT_NAME: str = "ACME Salary Management System"
+    PROJECT_NAME: str = "Salary Management System"
     API_V1_STR: str = "/api/v1"
     DATABASE_URL: str = os.getenv(
         "DATABASE_URL",
-        "postgresql://acme_user:acme_password@db:5432/salary_db",
+        "postgresql://salary_user:salary_password@db:5432/salary_db",
     )
     CORS_ORIGINS: list[str] = [
         "http://localhost:5173",

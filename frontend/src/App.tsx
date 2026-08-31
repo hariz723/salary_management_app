@@ -7,7 +7,8 @@ import { OverviewTab } from './components/dashboard/OverviewTab';
 import { DirectoryTab } from './components/directory/DirectoryTab';
 import { InsightsTab } from './components/analytics/InsightsTab';
 import { PayParityTab } from './components/analytics/PayParityTab';
-import { Spin, ConfigProvider } from 'antd';
+import { ThemeProvider, CssBaseline, CircularProgress, Box } from '@mui/material';
+import { muiTheme } from './theme/theme';
 
 const MainLayout: React.FC = () => {
   const { user, loading } = useAuth();
@@ -20,9 +21,17 @@ const MainLayout: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white">
-        <Spin size="large" />
-      </div>
+      <Box
+        sx={{
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: '#0f172a',
+        }}
+      >
+        <CircularProgress size={48} sx={{ color: '#60a5fa' }} />
+      </Box>
     );
   }
 
@@ -40,37 +49,30 @@ const MainLayout: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
+    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', bgcolor: '#f8fafc' }}>
       <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+      <Box component="main" sx={{ flex: 1, maxWidth: 1280, width: '100%', mx: 'auto', px: { xs: 2, sm: 3, md: 4 }, pt: 3 }}>
         {activeTab === 'overview' && (
           <OverviewTab onNavigateToDirectory={handleNavigateToDirectory} />
         )}
         {activeTab === 'directory' && <DirectoryTab initialFilter={directoryFilter} />}
         {activeTab === 'insights' && <InsightsTab />}
         {activeTab === 'parity' && <PayParityTab />}
-      </main>
-    </div>
+      </Box>
+    </Box>
   );
 };
 
 export const App: React.FC = () => {
   return (
-    <ConfigProvider
-      theme={{
-        token: {
-          colorPrimary: '#2563eb',
-          borderRadius: 10,
-          fontFamily: 'Inter, system-ui, sans-serif',
-        },
-      }}
-    >
+    <ThemeProvider theme={muiTheme}>
+      <CssBaseline />
       <AuthProvider>
         <CurrencyProvider>
           <MainLayout />
         </CurrencyProvider>
       </AuthProvider>
-    </ConfigProvider>
+    </ThemeProvider>
   );
 };
 

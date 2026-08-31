@@ -1,15 +1,35 @@
 import React, { useState } from 'react';
-import { Modal, Form, InputNumber, Select, Input, DatePicker, message, Alert } from 'antd';
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Box,
+  Typography,
+  Paper,
+  Chip,
+  Alert,
+  CircularProgress,
+} from '@mui/material';
+import {
+  TrendingUp,
+  CheckCircle,
+} from '@mui/icons-material';
 import { adjustSalary } from '../../services/api';
-import { EmployeeListItem, EmployeeDetail } from '../../types';
-import { DollarSign } from 'lucide-react';
-import dayjs from 'dayjs';
+import { EmployeeListItem } from '../../types';
+import { useCurrency } from '../../context/CurrencyContext';
 
 interface SalaryAdjustModalProps {
   visible: boolean;
-  employee: EmployeeListItem | EmployeeDetail | null;
+  employee: EmployeeListItem;
   onClose: () => void;
-  onSuccess: (updatedEmployee: EmployeeDetail) => void;
+  onSuccess: () => void;
 }
 
 export const SalaryAdjustModal: React.FC<SalaryAdjustModalProps> = ({
@@ -18,36 +38,45 @@ export const SalaryAdjustModal: React.FC<SalaryAdjustModalProps> = ({
   onClose,
   onSuccess,
 }) => {
-  const [form] = Form.useForm();
+  const { formatMoney } = useCurrency();
+  const [newBase, setNewBase] = useState<number>(employee.base_salary);
+  const [newBonus, setNewBonus] = useState<number>(employee.bonus_percentage);
+  const [newEquity, setNewEquity] = useState<number>(employee.equity_usd || 0);
+  const [changeType, setChangeType] = useState<string>('MERIT_INCREASE');
+  const [reason, setReason] = useState<string>('');
+  const [effectiveDate, setEffectiveDate] = useState<string>(
+    new Date().toISOString().split('T')[0]
+  );
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  if (!employee) return null;
+  const percentageChange =
+    employee.base_salary > 0
+      ? (((newBase - employee.base_salary) / employee.base_salary) * 100).toFixed(1)
+      : '0.0';
 
-  const currentBase = employee.base_salary;
-  const currentBonus = employee.bonus_percentage;
-  const currentEquity = employee.equity_usd;
-  const currency = employee.currency;
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reason.trim()) {
+      setErrorMsg('Please provide a business reason for this compensation adjustment.');
+      return;
+    }
 
-  const handleSubmit = async (values: any) => {
     setLoading(true);
     setErrorMsg(null);
     try {
-      const updated = await adjustSalary(employee.id, {
-        new_base_salary: values.new_base_salary,
-        new_bonus_percentage: values.new_bonus_percentage,
-        new_equity_usd: values.new_equity_usd,
-        change_type: values.change_type,
-        reason: values.reason,
-        notes: values.notes,
-        effective_date: values.effective_date ? values.effective_date.format('YYYY-MM-DD') : undefined,
+      await adjustSalary(employee.id, {
+        new_base_salary: newBase,
+        new_bonus_percentage: newBonus,
+        new_equity_usd: newEquity,
+        change_type: changeType,
+        reason: reason.trim(),
+        effective_date: effectiveDate,
         changed_by: 'HR Manager',
       });
-      message.success(`Salary adjusted successfully for ${employee.full_name}! Audit log created.`);
-      onSuccess(updated);
-      onClose();
+      onSuccess();
     } catch (err: any) {
-      const msg = err.response?.data?.detail || err.message || 'Failed to adjust compensation';
+      const msg = err.response?.data?.detail || err.message || 'Failed to adjust salary';
       setErrorMsg(msg);
     } finally {
       setLoading(false);
@@ -55,149 +84,120 @@ export const SalaryAdjustModal: React.FC<SalaryAdjustModalProps> = ({
   };
 
   return (
-    <Modal
-      title={
-        <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center">
-            <DollarSign className="w-4 h-4" />
-          </div>
-          <div>
-            <div className="text-base font-bold text-slate-900">Adjust Compensation & Log Audit</div>
-            <div className="text-xs text-slate-500 font-normal">
-              {employee.full_name} ({employee.employee_code}) • {employee.job_title}
-            </div>
-          </div>
-        </div>
-      }
-      open={visible}
-      onCancel={onClose}
-      footer={null}
-      destroyOnClose
-      width={560}
-      className="rounded-2xl overflow-hidden"
-    >
-      <div className="my-4 p-3 bg-slate-50 border border-slate-200/80 rounded-xl flex items-center justify-between text-xs">
-        <div>
-          <span className="text-slate-500">Current Base: </span>
-          <span className="font-bold text-slate-800">
-            {currency} {currentBase.toLocaleString()}
-          </span>
-        </div>
-        <div>
-          <span className="text-slate-500">Bonus: </span>
-          <span className="font-bold text-slate-800">{currentBonus}%</span>
-        </div>
-        <div>
-          <span className="text-slate-500">Equity: </span>
-          <span className="font-bold text-slate-800">${currentEquity.toLocaleString()} USD</span>
-        </div>
-      </div>
+    <Dialog open={visible} onClose={onClose} maxWidth="sm" fullWidth>
+      <DialogTitle sx={{ fontWeight: 800, display: 'flex', alignItems: 'center', gap: 1 }}>
+        <TrendingUp sx={{ color: '#2563eb' }} />
+        <span>Adjust Compensation: {employee.full_name}</span>
+      </DialogTitle>
 
-      {errorMsg && (
-        <Alert message={errorMsg} type="error" showIcon className="mb-4 rounded-lg text-xs" />
-      )}
+      <form onSubmit={handleSubmit}>
+        <DialogContent dividers sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+          {errorMsg && <Alert severity="error">{errorMsg}</Alert>}
 
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={handleSubmit}
-        initialValues={{
-          new_base_salary: currentBase,
-          new_bonus_percentage: currentBonus,
-          new_equity_usd: currentEquity,
-          change_type: 'ADJUSTMENT',
-          effective_date: dayjs(),
-        }}
-      >
-        <div className="grid grid-cols-2 gap-3">
-          <Form.Item
-            name="new_base_salary"
-            label={<span className="text-xs font-semibold">New Base Salary ({currency})</span>}
-            rules={[{ required: true, message: 'Please enter new base salary' }]}
-          >
-            <InputNumber
-              className="w-full"
-              min={1}
-              size="middle"
-              formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-              parser={(value) => value?.replace(/\$\s?|(,*)/g, '') as any}
+          {/* Current vs Proposed Overview */}
+          <Paper elevation={0} sx={{ p: 2, bgcolor: '#f8fafc', borderRadius: 2.5, border: '1px solid #e2e8f0' }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Box>
+                <Typography variant="caption" sx={{ color: '#64748b' }}>Current Base Salary</Typography>
+                <Typography variant="body1" sx={{ fontWeight: 700, fontFamily: 'monospace' }}>
+                  {employee.currency} {employee.base_salary.toLocaleString()}
+                </Typography>
+                <Typography variant="caption" sx={{ color: '#94a3b8' }}>
+                  USD Equiv: {formatMoney(employee.base_salary_usd)}
+                </Typography>
+              </Box>
+
+              <Chip
+                label={`${Number(percentageChange) >= 0 ? `+${percentageChange}%` : `${percentageChange}%`}`}
+                color={Number(percentageChange) >= 0 ? 'success' : 'error'}
+                sx={{ fontWeight: 800, fontSize: '0.8125rem' }}
+              />
+            </Box>
+          </Paper>
+
+          {/* Input Fields */}
+          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+            <TextField
+              label={`New Base (${employee.currency})`}
+              type="number"
+              size="small"
+              value={newBase}
+              onChange={(e) => setNewBase(parseFloat(e.target.value) || 0)}
+              required
             />
-          </Form.Item>
 
-          <Form.Item
-            name="change_type"
-            label={<span className="text-xs font-semibold">Adjustment Type</span>}
-            rules={[{ required: true }]}
-          >
-            <Select
-              options={[
-                { value: 'ADJUSTMENT', label: 'Market / Merit Adjustment' },
-                { value: 'PROMOTION', label: 'Promotion' },
-                { value: 'ANNUAL_REVIEW', label: 'Annual Compensation Review' },
-                { value: 'BAND_CORRECTION', label: 'Band Parity Correction' },
-                { value: 'CORRECTION', label: 'Data Correction' },
-              ]}
+            <TextField
+              label="Target Bonus (%)"
+              type="number"
+              size="small"
+              value={newBonus}
+              onChange={(e) => setNewBonus(parseFloat(e.target.value) || 0)}
+              required
             />
-          </Form.Item>
-        </div>
+          </Box>
 
-        <div className="grid grid-cols-2 gap-3">
-          <Form.Item
-            name="new_bonus_percentage"
-            label={<span className="text-xs font-semibold">Target Bonus (%)</span>}
-          >
-            <InputNumber className="w-full" min={0} max={200} step={0.5} />
-          </Form.Item>
-
-          <Form.Item
-            name="new_equity_usd"
-            label={<span className="text-xs font-semibold">Annual Equity Grant (USD)</span>}
-          >
-            <InputNumber
-              className="w-full"
-              min={0}
-              formatter={(value) => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-              parser={(value) => value?.replace(/\$\s?|(,*)/g, '') as any}
+          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+            <TextField
+              label="Annual Equity (USD $)"
+              type="number"
+              size="small"
+              value={newEquity}
+              onChange={(e) => setNewEquity(parseFloat(e.target.value) || 0)}
             />
-          </Form.Item>
-        </div>
 
-        <Form.Item
-          name="effective_date"
-          label={<span className="text-xs font-semibold">Effective Date</span>}
-        >
-          <DatePicker className="w-full" format="YYYY-MM-DD" />
-        </Form.Item>
+            <FormControl size="small" fullWidth>
+              <InputLabel>Adjustment Type</InputLabel>
+              <Select
+                value={changeType}
+                label="Adjustment Type"
+                onChange={(e) => setChangeType(e.target.value)}
+              >
+                <MenuItem value="MERIT_INCREASE">Merit Increase</MenuItem>
+                <MenuItem value="PROMOTION">Promotion</MenuItem>
+                <MenuItem value="ANNUAL_REVIEW">Annual Review</MenuItem>
+                <MenuItem value="BAND_CORRECTION">Band Parity Correction</MenuItem>
+                <MenuItem value="MARKET_ADJUSTMENT">Market Rate Adjustment</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
 
-        <Form.Item
-          name="reason"
-          label={<span className="text-xs font-semibold">Mandatory Business Reason (For Audit Log)</span>}
-          rules={[{ required: true, min: 3, message: 'Please provide a clear justification' }]}
-        >
-          <Input placeholder="e.g. Q3 Performance Merit Increase, promoted to Lead Engineer" />
-        </Form.Item>
+          <TextField
+            label="Effective Date"
+            type="date"
+            size="small"
+            value={effectiveDate}
+            onChange={(e) => setEffectiveDate(e.target.value)}
+            InputLabelProps={{ shrink: true }}
+            required
+          />
 
-        <Form.Item name="notes" label={<span className="text-xs font-semibold">Additional Notes (Optional)</span>}>
-          <Input.TextArea rows={2} placeholder="Optional committee approvals or benchmark links" />
-        </Form.Item>
+          <TextField
+            label="Business Justification / Reason"
+            placeholder="e.g. Promoted to Senior Engineer following H1 performance review."
+            multiline
+            rows={3}
+            size="small"
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            required
+          />
+        </DialogContent>
 
-        <div className="flex justify-end space-x-2 pt-2 border-t border-slate-100">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg"
-          >
+        <DialogActions sx={{ p: 2.5 }}>
+          <Button onClick={onClose} sx={{ color: '#64748b', fontWeight: 600 }}>
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
             type="submit"
+            variant="contained"
             disabled={loading}
-            className="px-4 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm flex items-center space-x-1.5"
+            startIcon={loading ? <CircularProgress size={16} /> : <CheckCircle />}
+            sx={{ fontWeight: 700 }}
           >
-            {loading ? 'Saving...' : 'Confirm & Write Audit Entry'}
-          </button>
-        </div>
-      </Form>
-    </Modal>
+            Apply Adjustment
+          </Button>
+        </DialogActions>
+      </form>
+    </Dialog>
   );
 };

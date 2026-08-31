@@ -1,12 +1,57 @@
-# ACME Global Salary Management System
+# 💰 Global Salary Management System
 
-An enterprise-grade compensation intelligence and salary management platform built for **ACME Corporation's HR Leadership** to manage, analyze, govern, and adjust compensation data for employees across **8 global countries and currencies** with sub-50ms query responsiveness.
+An enterprise-grade compensation intelligence and salary management platform built for **HR Leadership & Executives** to manage, analyze, govern, and adjust compensation data across **8 global countries and currencies** with sub-50ms query responsiveness.
+
+![Executive Overview](docs/screenshots/executive_overview.png)
+
+---
+
+## 🌟 Visual Feature Showcase
+
+### 1. 📊 Executive Compensation Overview Dashboard
+* **High-Level Payroll KPIs**: Instant visibility into Total Annual Payroll, Active Headcount, Median Base Pay, and Salary Band Compliance rate.
+* **Interactive Pay Distribution**: Visual histogram mapping employee counts across total compensation tiers.
+* **Department Benchmark Averages**: Cross-functional compensation comparison.
+* **Multi-Currency Engine**: Live currency conversion across **USD ($), EUR (€), GBP (£), INR (₹), SGD (S$), CAD (CA$), AUD (A$), and JPY (¥)**.
+
+![Executive Overview Dashboard](docs/screenshots/executive_overview.png)
+
+---
+
+### 2. 👥 Employee Compensation Directory & Governance
+* **Sub-50ms Server-Side Paginated Grid**: Ultra-fast indexed search across employee code, name, email, and job title.
+* **Single Employee Ingestion**: 1-Click **"Add Employee"** modal with personal info, country-specific salary currency handling, and live total USD compensation calculation.
+* **Multi-Facet Filtering**: Filter by Country, Department, Seniority Level, and Band Status (`Within Band`, `Underpaid Outlier`, `Overpaid Outlier`).
+* **Multi-Select & Bulk Operations**: Checkbox row selection with batch deletion and single-record deletion with confirmation dialogs.
+* **CSV Data Pipelines**: Line-by-line validated CSV bulk upload and streaming export.
+
+![Employee Directory](docs/screenshots/employee_directory.png)
+
+---
+
+### 3. 💡 Strategic HR Q&A (Automated Compensation Intelligence)
+* Instant pre-computed answers to core executive compensation inquiries:
+  * *"What is the organization's gender pay parity index and where are the largest department gaps?"*
+  * *"What is the budget impact required to bring all underpaid employees to band minimum?"*
+  * *"Which departments lead in total compensation and performance bonuses?"*
+  * *"Who are the top 5 highest compensated roles globally?"*
+
+![Strategic HR Q&A](docs/screenshots/strategic_hr_qa.png)
+
+---
+
+### 4. ⚖️ Pay Parity & Salary Band Compliance
+* **Gender Pay Parity Ratios**: Department-by-department side-by-side female vs. male median compensation comparison.
+* **Remediation Budget Engine**: Exact calculated capital required to eliminate all underpaid outliers.
+* **Priority Band Outliers Table**: Fast 1-click **"Rectify"** triggers to apply salary corrections.
+
+![Pay Parity and Bands](docs/screenshots/pay_parity_bands.png)
 
 ---
 
 ## 🚀 Quick Start Guide
 
-You can run the entire platform (PostgreSQL Database + FastAPI Backend + React/Vite Frontend) using either **Makefile commands**, **Native Docker Compose**, or **Local Development**.
+You can run the entire platform (PostgreSQL Database + FastAPI Backend + React/Vite Material-UI Frontend) using either **Makefile commands**, **Native Docker Compose**, or **Local Development**.
 
 ---
 
@@ -108,7 +153,7 @@ cd frontend && npm run dev
 
 | Service | URL / Port | Details |
 | :--- | :--- | :--- |
-| **Frontend Web App** | [http://localhost:5173](http://localhost:5173) | Responsive React 18 + Vite UI with interactive Menu navigation |
+| **Frontend Web App** | [http://localhost:5173](http://localhost:5173) | Responsive React 18 + Vite + Material-UI (MUI v5) interface |
 | **Backend API & Swagger** | [http://localhost:8000/docs](http://localhost:8000/docs) | Interactive OpenAPI / Swagger API documentation |
 | **Backend Healthcheck** | [http://localhost:8000/health](http://localhost:8000/health) | System health & status check endpoint |
 | **PostgreSQL Database** | `localhost:5433` | PostgreSQL 16 (Mapped to host port `5433` to prevent port 5432 conflict) |
@@ -121,9 +166,9 @@ The database is pre-seeded with accounts for all key organizational roles. *(1-c
 
 | Role | Email | Password | Permissions |
 | :--- | :--- | :--- | :--- |
-| **HR Manager** (Default) | `hr.manager@acme.com` | `Password123` | Full access: salary adjustments, bulk deletes, CSV import/export |
-| **System Administrator** | `admin@acme.com` | `Admin123!` | System configuration, user management, database governance |
-| **Chief People Officer** | `executive@acme.com` | `Exec123!` | Executive dashboard, strategic HR Q&A, pay parity insights |
+| **HR Manager** (Default) | `hr.manager@company.com` | `Password123` | Full access: salary adjustments, bulk deletes, CSV import/export |
+| **System Administrator** | `admin@company.com` | `Admin123!` | System configuration, user management, database governance |
+| **Chief People Officer** | `executive@company.com` | `Exec123!` | Executive dashboard, strategic HR Q&A, pay parity insights |
 
 > **Note on Registration**: When creating a new account via **"Create Account"**, the user is safely redirected back to the **Sign In** screen with a confirmation message to authenticate with their credentials.
 
@@ -133,8 +178,8 @@ The database is pre-seeded with accounts for all key organizational roles. *(1-c
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    React + Vite Frontend                    │
-│     (TypeScript, Ant Design 5, Tailwind CSS, Recharts)      │
+│             React + Vite Material-UI (MUI v5)               │
+│  (TypeScript, Emotion, MUI Joy/Core, Tailwind, Recharts)    │
 └──────────────────────────────┬──────────────────────────────┘
                                │ (REST API / JWT Auth)
                                ▼
@@ -150,44 +195,11 @@ The database is pre-seeded with accounts for all key organizational roles. *(1-c
 └─────────────────────────────────────────────────────────────┘
 ```
 
+* **Frontend**: React 18, Vite, TypeScript, Material-UI (MUI v5), Emotion, Recharts SVG data visualizations, Tailwind CSS.
 * **Backend**: FastAPI (Python 3.13), SQLAlchemy 2.0, Alembic, Pydantic v2, PBKDF2 Password Hashing, JWT Bearer Tokens.
 * **Repository Pattern**: Strict isolation of database queries in [`backend/app/repositories/`](backend/app/repositories/) separate from business logic in [`backend/app/services/`](backend/app/services/).
 * **Centralized Logging & Request Timing**: Centralized [`backend/app/core/logger.py`](backend/app/core/logger.py) with request latency middleware tracking millisecond execution duration via `X-Process-Time-Ms` response headers.
-* **Frontend**: React 18, Vite, TypeScript, Ant Design 5, Tailwind CSS, Lucide Icons, Recharts SVG data visualizations.
-* **Responsive UI**: Adapts smoothly to Mobile (`<640px`), Tablets (`640-1024px`), Desktops (`1024-1440px`), and Ultra-Wide displays.
-
----
-
-## 📊 Core Feature Modules
-
-### 1. 📊 Executive Overview Dashboard
-* Organization-wide payroll KPI cards (Total Annual Spend, Headcount, Median/Mean Base Pay, Band Compliance %).
-* Dynamic pay distribution histogram across compensation tiers.
-* Department benchmark averages and global country-by-country spend breakdown.
-* Live multi-currency converter supporting **USD ($), EUR (€), GBP (£), INR (₹), SGD (S$), CAD (CA$), AUD (A$), and JPY (¥)**.
-
-### 2. 👥 Employee Compensation Directory
-* High-speed server-side paginated table with composite index acceleration.
-* Multi-facet filters: Country, Department, Seniority Level, Gender, Band Status (Within Band, Underpaid, Overpaid).
-* Debounced instant search across Employee Code, Full Name, Email, and Job Title.
-* **Single & Bulk Record Deletion**: Select individual or multiple employee records and delete with confirmation dialogs.
-* **CSV Ingestion & Streaming Export**: Bulk import with line-by-line Pydantic validation and error logging.
-
-### 3. 💡 Strategic HR Q&A (Automated Compensation Answers)
-* Instant pre-computed answers to core executive compensation questions:
-  * *"What is our gender pay gap and department parity ratio?"*
-  * *"What budget is required to bring all underpaid employees to band minimum?"*
-  * *"Which departments have the highest variable bonus allocation?"*
-  * *"Who are the top 5 highest compensated roles globally?"*
-
-### 4. ⚖️ Pay Parity & Compensation Band Governance
-* Department-by-department gender pay parity ratios (Female vs Male median pay).
-* Priority compensation band outliers table with 1-click **"Rectify"** adjustment triggers.
-
-### 5. 📝 Salary Adjustments & Immutable Audit Trail
-* Salary adjustment modal supporting Promotions, Merit Increases, Annual Reviews, and Parity Corrections.
-* Mandatory business justification and effective date capture.
-* Chronological audit log timeline for every compensation change.
+* **Responsive UI**: Adapts cleanly across Mobile (`<640px`), Tablets (`640-1024px`), Desktops (`1024-1440px`), and Ultra-Wide displays.
 
 ---
 

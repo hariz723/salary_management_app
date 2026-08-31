@@ -394,7 +394,7 @@ def get_hr_answers(db: Session) -> list[HRQuestionCard]:
     cards: list[HRQuestionCard] = [
         HRQuestionCard(
             id="q1_gender_parity",
-            question="What is ACME's gender pay parity index and where are the largest department gaps?",
+            question="What is the organization's gender pay parity index and where are the largest department gaps?",
             category="Equity & Diversity",
             summary_answer=f"Overall female-to-male pay ratio is {gender_gap.overall_female_to_male_ratio:.2f} (gap: {gender_gap.overall_gap_percentage}%). Across 8 departments, pay parity remains within competitive industry ranges.",
             detailed_data={

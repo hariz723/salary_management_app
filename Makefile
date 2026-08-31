@@ -4,7 +4,7 @@
 
 help:
 	@echo "=============================================================================="
-	@echo "  ACME Salary Management System - Makefile Instructions & Command Guide      "
+	@echo "  Global Salary Management System - Makefile Instructions & Command Guide     "
 	@echo "=============================================================================="
 	@echo "Usage: make [target]"
 	@echo ""
