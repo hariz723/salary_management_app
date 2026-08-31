@@ -1,63 +1,146 @@
-# Employee Salary Management System
+# ACME Global Salary Management System
 
-An enterprise-grade compensation intelligence and salary management platform built for **Corporation's HR Manager** to manage, analyze, adjust, and govern compensation data for **10,000 employees** across 8 countries and currencies with sub-50ms responsiveness.
+An enterprise-grade compensation intelligence and salary management platform built for **ACME Corporation's HR Leadership** to manage, analyze, govern, and adjust compensation data for employees across **8 global countries and currencies** with sub-50ms query responsiveness.
 
 ---
 
-## 🚀 Quick Start with Docker Compose
+## 🚀 Quick Start Guide
 
-Run the entire system (PostgreSQL + FastAPI Backend + React/Vite Frontend) with a single command:
+You can run the entire platform (PostgreSQL Database + FastAPI Backend + React/Vite Frontend) using either **Makefile commands**, **Native Docker Compose**, or **Local Development**.
+
+---
+
+### Option A: Using Makefile (Recommended)
+
+The easiest and fastest way to manage the full lifecycle:
 
 ```bash
-docker compose up --build
-# Or using the Makefile:
+# 1. (Optional) Run one-time local dependency setup & database seeding
+make setup-local
+
+# 2. Build and launch all containerized services (Postgres + Backend + Frontend)
 make up
+
+# 3. (Optional) In another terminal, apply database migrations
+make migrate
 ```
 
-### 🛠️ Handy Makefile Commands:
-* `make setup-local` - Install all dependencies (Python + npm), copy `.env`, and seed 10k records
-* `make migrate` - Apply all pending Alembic database migrations (`alembic upgrade head`)
-* `make migrate-generate m='msg'` - Autogenerate a new Alembic migration schema revision
-* `make migrate-downgrade` - Roll back the latest migration
-* `make up` - Build and start all services (PostgreSQL, Backend, Frontend) in foreground
-* `make up-d` - Start all services in the background
-* `make down` - Stop all services
-* `make down-v` - Stop services and reset PostgreSQL volume
-* `make logs` - Tail logs across all containers (`make logs-backend`, `make logs-frontend`, `make logs-db`)
-* `make test` - Run Pytest test suite inside the Docker container
-* `make lint` - Run all linters (Backend Ruff + Frontend ESLint)
-* `make format` - Automatically fix and format code
-* `make ps` - View status of running containers
-
-
-### Access URLs:
-* **Frontend Web App**: [http://localhost:5173](http://localhost:5173)
-* **Backend Swagger API Docs**: [http://localhost:8000/docs](http://localhost:8000/docs)
-* **PostgreSQL Database**: `localhost:5432` (`user: acme_user`, `password: acme_password`, `db: salary_db`)
-
-### 🔑 Demo Login Accounts:
-| Role | Email | Password |
-| :--- | :--- | :--- |
-| **HR Manager** (Default) | `hr.manager@acme.com` | `Password123` |
-| **System Administrator** | `admin@acme.com` | `Admin123!` |
-| **Chief People Officer (Executive)** | `executive@acme.com` | `Exec123!` |
-
-*(You can also use the 1-click Demo Account buttons on the login screen!)*
+#### 🛠️ Available Makefile Commands:
+| Command | Description |
+| :--- | :--- |
+| `make setup-local` | One-click setup: checks `.env`, installs Python & Node packages, and seeds initial data |
+| `make up` | Builds and starts all services in the foreground with live logs |
+| `make up-d` | Builds and starts all services in detached (background) mode |
+| `make down` | Stops and removes running containers |
+| `make down-v` | Stops containers and wipes the PostgreSQL data volume (fresh start) |
+| `make logs` | Tails live logs across all containers (`make logs-backend`, `make logs-frontend`, `make logs-db`) |
+| `make ps` | Displays status and port mappings of all running containers |
+| `make restart` | Restarts all running containers |
+| `make migrate` | Applies all pending Alembic database migrations (`alembic upgrade head`) |
+| `make migrate-generate m="msg"` | Autogenerates a new Alembic schema migration revision |
+| `make migrate-downgrade` | Rolls back the latest database migration |
+| `make test` | Executes the full Pytest test suite inside the backend container |
+| `make lint` | Runs code linters for both Backend (Ruff) and Frontend (ESLint) |
+| `make format` | Automatically fixes code style violations and formats the codebase |
+| `make clean` | Cleans temporary cache files, `.pytest_cache`, `.ruff_cache`, and `__pycache__` |
 
 ---
 
-## 🏗️ Architecture & Tech Stack
+### Option B: Using Native Docker Compose Commands
+
+If you prefer standard Docker Compose commands without `make`:
+
+```bash
+# 1. Build and start all services
+docker compose up --build
+
+# Or start in detached (background) mode
+docker compose up -d --build
+
+# 2. Run database migrations inside the backend container
+docker compose exec backend alembic upgrade head
+
+# 3. Run Pytest suite inside the backend container
+docker compose exec backend pytest backend/
+
+# 4. View container status
+docker compose ps
+
+# 5. Tail live logs
+docker compose logs -f
+
+# 6. Stop all services
+docker compose down
+
+# Stop and wipe database volume
+docker compose down -v
+```
+
+---
+
+### Option C: Local Development without Docker
+
+For developers running Python and Node directly on their local machine:
+
+```bash
+# 1. Copy environment template
+cp .env.example .env
+
+# 2. Install backend dependencies
+pip install -r backend/requirements.txt
+
+# 3. Install frontend dependencies
+cd frontend && npm install && cd ..
+
+# 4. Seed initial database records
+python3 backend/scripts/seed_data.py
+
+# 5. Start FastAPI backend (Port 8000)
+uvicorn app.main:app --app-dir backend --host 127.0.0.1 --port 8000 --reload
+
+# 6. In a separate terminal, start React/Vite frontend (Port 5173)
+cd frontend && npm run dev
+```
+
+---
+
+## 🌐 Application Access & Ports
+
+| Service | URL / Port | Details |
+| :--- | :--- | :--- |
+| **Frontend Web App** | [http://localhost:5173](http://localhost:5173) | Responsive React 18 + Vite UI with interactive Menu navigation |
+| **Backend API & Swagger** | [http://localhost:8000/docs](http://localhost:8000/docs) | Interactive OpenAPI / Swagger API documentation |
+| **Backend Healthcheck** | [http://localhost:8000/health](http://localhost:8000/health) | System health & status check endpoint |
+| **PostgreSQL Database** | `localhost:5433` | PostgreSQL 16 (Mapped to host port `5433` to prevent port 5432 conflict) |
+
+---
+
+## 🔑 Demo Login Credentials
+
+The database is pre-seeded with accounts for all key organizational roles. *(1-click demo login buttons are also available directly on the login screen)*:
+
+| Role | Email | Password | Permissions |
+| :--- | :--- | :--- | :--- |
+| **HR Manager** (Default) | `hr.manager@acme.com` | `Password123` | Full access: salary adjustments, bulk deletes, CSV import/export |
+| **System Administrator** | `admin@acme.com` | `Admin123!` | System configuration, user management, database governance |
+| **Chief People Officer** | `executive@acme.com` | `Exec123!` | Executive dashboard, strategic HR Q&A, pay parity insights |
+
+> **Note on Registration**: When creating a new account via **"Create Account"**, the user is safely redirected back to the **Sign In** screen with a confirmation message to authenticate with their credentials.
+
+---
+
+## 🏗️ Architecture & Technology Stack
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    React + Vite Frontend                    │
-│     (TypeScript, Ant Design, Tailwind CSS, Recharts)        │
+│     (TypeScript, Ant Design 5, Tailwind CSS, Recharts)      │
 └──────────────────────────────┬──────────────────────────────┘
                                │ (REST API / JWT Auth)
                                ▼
 ┌─────────────────────────────────────────────────────────────┐
 │                    FastAPI Backend Gateway                  │
-│       (Python 3.13, Pydantic v2, Repository Pattern)        │
+│   (Python 3.13, Pydantic v2, Repository Pattern, Alembic)   │
 └──────────────────────────────┬──────────────────────────────┘
                                │ (SQLAlchemy 2.0 ORM)
                                ▼
@@ -67,60 +150,74 @@ make up
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### Backend:
-* **FastAPI (Python 3.13)**: High-speed asynchronous REST API with auto-generated Swagger documentation.
-* **SQLAlchemy 2.0 & Repository Pattern**: Clean separation of database queries in `repositories/` from business services in `services/`.
-* **PostgreSQL 16 / SQLite**: Connection pooling and composite B-tree indexes ensuring < 25ms response time on 10,000 rows.
-* **Security**: Salted PBKDF2 password hashing & signed JWT access token authentication.
-* **Pydantic v2**: Strict schema validation for requests, responses, and bulk CSV uploads.
-
-### Frontend:
-* **React 18 + Vite + TypeScript**: Instant HMR and lightning-fast rendering.
-* **Ant Design 5 & Tailwind CSS**: Enterprise-grade UI data tables, drawers, filter toolbars, and modal workflows.
-* **Recharts**: Interactive pay distribution histograms, department benchmark comparisons, and parity charts.
-* **Live Multi-Currency Conversion**: Instant toggle between USD, EUR, GBP, INR, SGD, CAD, AUD, and JPY.
+* **Backend**: FastAPI (Python 3.13), SQLAlchemy 2.0, Alembic, Pydantic v2, PBKDF2 Password Hashing, JWT Bearer Tokens.
+* **Repository Pattern**: Strict isolation of database queries in [`backend/app/repositories/`](backend/app/repositories/) separate from business logic in [`backend/app/services/`](backend/app/services/).
+* **Centralized Logging & Request Timing**: Centralized [`backend/app/core/logger.py`](backend/app/core/logger.py) with request latency middleware tracking millisecond execution duration via `X-Process-Time-Ms` response headers.
+* **Frontend**: React 18, Vite, TypeScript, Ant Design 5, Tailwind CSS, Lucide Icons, Recharts SVG data visualizations.
+* **Responsive UI**: Adapts smoothly to Mobile (`<640px`), Tablets (`640-1024px`), Desktops (`1024-1440px`), and Ultra-Wide displays.
 
 ---
 
-## 📊 Core Features
+## 📊 Core Feature Modules
 
-1. **📊 Executive Overview & Insights**:
-   * Organization-wide payroll KPI cards (Total Spend, Headcount, Median/Mean Base Pay, Bonus %, Equity).
-   * Pay distribution histogram across 10,000 employees.
-   * Department compensation averages & global country-by-country spend.
+### 1. 📊 Executive Overview Dashboard
+* Organization-wide payroll KPI cards (Total Annual Spend, Headcount, Median/Mean Base Pay, Band Compliance %).
+* Dynamic pay distribution histogram across compensation tiers.
+* Department benchmark averages and global country-by-country spend breakdown.
+* Live multi-currency converter supporting **USD ($), EUR (€), GBP (£), INR (₹), SGD (S$), CAD (CA$), AUD (A$), and JPY (¥)**.
 
-2. **👥 10,000 Employee Compensation Directory**:
-   * Server-side paginated table with multi-facet filters (Country, Department, Job Level, Gender, Band Status).
-   * Instant debounced search across employee code, name, email, and job title.
-   * Direct CSV export and bulk CSV import with line-by-line schema validation.
+### 2. 👥 Employee Compensation Directory
+* High-speed server-side paginated table with composite index acceleration.
+* Multi-facet filters: Country, Department, Seniority Level, Gender, Band Status (Within Band, Underpaid, Overpaid).
+* Debounced instant search across Employee Code, Full Name, Email, and Job Title.
+* **Single & Bulk Record Deletion**: Select individual or multiple employee records and delete with confirmation dialogs.
+* **CSV Ingestion & Streaming Export**: Bulk import with line-by-line Pydantic validation and error logging.
 
-3. **💡 Strategic HR Q&A / Compensation Answers**:
-   * Pre-computed answers to core executive questions (*"What is our gender pay gap?"*, *"What is the budget required to correct underpaid employees?"*, *"Which departments lead in bonuses?"*, *"Who are the top 5 highest earners globally?"*).
+### 3. 💡 Strategic HR Q&A (Automated Compensation Answers)
+* Instant pre-computed answers to core executive compensation questions:
+  * *"What is our gender pay gap and department parity ratio?"*
+  * *"What budget is required to bring all underpaid employees to band minimum?"*
+  * *"Which departments have the highest variable bonus allocation?"*
+  * *"Who are the top 5 highest compensated roles globally?"*
 
-4. **⚖️ Pay Parity & Salary Band Governance**:
-   * Department-by-department gender pay gap parity ratios.
-   * Priority compensation band outliers table with 1-click rectification.
+### 4. ⚖️ Pay Parity & Compensation Band Governance
+* Department-by-department gender pay parity ratios (Female vs Male median pay).
+* Priority compensation band outliers table with 1-click **"Rectify"** adjustment triggers.
 
-5. **📝 Salary Adjustment & Immutable Audit Trail**:
-   * Detailed compensation breakdown (Base, Bonus %, Equity, Gross Total).
-   * Salary adjustment form with mandatory business justification and effective date.
-   * Chronological audit log timeline for every compensation modification.
+### 5. 📝 Salary Adjustments & Immutable Audit Trail
+* Salary adjustment modal supporting Promotions, Merit Increases, Annual Reviews, and Parity Corrections.
+* Mandatory business justification and effective date capture.
+* Chronological audit log timeline for every compensation change.
 
 ---
 
-## 🧪 Running Pytest Tests
+## 🧪 Testing & Code Quality
 
-To execute the fast, deterministic backend test suite:
+### Running Tests
+Execute the deterministic backend Pytest test suite (24 tests covering Repositories, Auth, Salary Adjustments, Analytics, and CSV Import/Export):
 
 ```bash
-conda run -n py313 pytest backend/
+# Inside Docker container:
+make test
+
+# Or locally:
+pytest backend/
+```
+
+### Running Linters & Formatters
+```bash
+# Run both Backend Ruff and Frontend ESLint:
+make lint
+
+# Automatically format and fix violations:
+make format
 ```
 
 ---
 
 ## 📁 Engineering Artifacts & Assessment Docs
 
-* 📄 **Requirements Document (PRD)**: [`docs/REQUIREMENTS.md`](file:///home/hari/projects/salary_management_app/docs/REQUIREMENTS.md)
-* 🏛️ **Architecture & Data Flow**: [`docs/ARCHITECTURE.md`](file:///home/hari/projects/salary_management_app/docs/ARCHITECTURE.md)
-* ⚖️ **Design Trade-offs & Decisions**: [`docs/TRADE_OFFS.md`](file:///home/hari/projects/salary_management_app/docs/TRADE_OFFS.md)
-* ⚡ **Performance & 10k Benchmarks**: [`docs/PERFORMANCE.md`](file:///home/hari/projects/salary_management_app/docs/PERFORMANCE.md)
+* 📄 **Product Requirements Document (PRD)**: [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md)
+* 🏛️ **System Architecture & Data Flow**: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
+* ⚖️ **Design Trade-offs & Rationale**: [`docs/TRADE_OFFS.md`](docs/TRADE_OFFS.md)
+* ⚡ **Performance & Indexing Benchmarks**: [`docs/PERFORMANCE.md`](docs/PERFORMANCE.md)
