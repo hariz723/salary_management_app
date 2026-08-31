@@ -21,8 +21,10 @@ class EmployeeBase(BaseModel):
     performance_rating: float = Field(default=3.0, ge=1.0, le=5.0)
     is_active: bool = True
 
+
 class EmployeeCreate(EmployeeBase):
     initial_salary: SalaryRecordBase
+
 
 class EmployeeUpdate(BaseModel):
     first_name: str | None = None
@@ -37,6 +39,7 @@ class EmployeeUpdate(BaseModel):
     job_level: str | None = None
     performance_rating: float | None = None
     is_active: bool | None = None
+
 
 class EmployeeListItem(BaseModel):
     id: str
@@ -67,6 +70,7 @@ class EmployeeListItem(BaseModel):
     class Config:
         from_attributes = True
 
+
 class EmployeeDetail(BaseModel):
     id: str
     employee_code: str
@@ -96,6 +100,7 @@ class EmployeeDetail(BaseModel):
 
     class Config:
         from_attributes = True
+
 
 class PaginatedEmployeeResponse(BaseModel):
     items: list[EmployeeListItem]

@@ -26,11 +26,27 @@ def export_employees_csv(db: Session) -> str:
     writer = csv.writer(output)
 
     headers = [
-        "Employee Code", "First Name", "Last Name", "Email", "Gender",
-        "Country", "Country Code", "City", "Department", "Job Title",
-        "Job Level", "Hire Date", "Performance Rating", "Is Active",
-        "Currency", "Base Salary", "Bonus %", "Equity USD",
-        "Base Salary USD", "Total Compensation USD", "Band Status"
+        "Employee Code",
+        "First Name",
+        "Last Name",
+        "Email",
+        "Gender",
+        "Country",
+        "Country Code",
+        "City",
+        "Department",
+        "Job Title",
+        "Job Level",
+        "Hire Date",
+        "Performance Rating",
+        "Is Active",
+        "Currency",
+        "Base Salary",
+        "Bonus %",
+        "Equity USD",
+        "Base Salary USD",
+        "Total Compensation USD",
+        "Band Status",
     ]
     writer.writerow(headers)
 
@@ -45,37 +61,49 @@ def export_employees_csv(db: Session) -> str:
         elif sal.base_salary_usd > max_b:
             status = "OVERPAID"
 
-        writer.writerow([
-            emp.employee_code,
-            emp.first_name,
-            emp.last_name,
-            emp.email,
-            emp.gender,
-            emp.country,
-            emp.country_code,
-            emp.city,
-            emp.department,
-            emp.job_title,
-            emp.job_level,
-            emp.hire_date.isoformat() if emp.hire_date else "",
-            emp.performance_rating,
-            "Active" if emp.is_active else "Inactive",
-            sal.currency,
-            sal.base_salary,
-            sal.bonus_percentage,
-            sal.equity_usd,
-            sal.base_salary_usd,
-            sal.total_compensation_usd,
-            status
-        ])
+        writer.writerow(
+            [
+                emp.employee_code,
+                emp.first_name,
+                emp.last_name,
+                emp.email,
+                emp.gender,
+                emp.country,
+                emp.country_code,
+                emp.city,
+                emp.department,
+                emp.job_title,
+                emp.job_level,
+                emp.hire_date.isoformat() if emp.hire_date else "",
+                emp.performance_rating,
+                "Active" if emp.is_active else "Inactive",
+                sal.currency,
+                sal.base_salary,
+                sal.bonus_percentage,
+                sal.equity_usd,
+                sal.base_salary_usd,
+                sal.total_compensation_usd,
+                status,
+            ]
+        )
 
     return output.getvalue()
+
 
 def import_employees_csv(db: Session, csv_text: str) -> dict[str, Any]:
     f = io.StringIO(csv_text.strip())
     reader = csv.DictReader(f)
 
-    required_fields = ["first_name", "last_name", "email", "country", "department", "job_title", "job_level", "base_salary"]
+    required_fields = [
+        "first_name",
+        "last_name",
+        "email",
+        "country",
+        "department",
+        "job_title",
+        "job_level",
+        "base_salary",
+    ]
 
     total_rows = 0
     imported_count = 0
@@ -100,7 +128,9 @@ def import_employees_csv(db: Session, csv_text: str) -> dict[str, Any]:
 
         missing = [f for f in required_fields if f not in clean_row or not clean_row[f]]
         if missing:
-            errors.append({"row": row_idx, "error": f"Missing required columns: {', '.join(missing)}"})
+            errors.append(
+                {"row": row_idx, "error": f"Missing required columns: {', '.join(missing)}"}
+            )
             continue
 
         email = clean_row["email"]
@@ -110,7 +140,12 @@ def import_employees_csv(db: Session, csv_text: str) -> dict[str, Any]:
 
         country = clean_row["country"]
         if country not in COUNTRIES_DATA:
-            errors.append({"row": row_idx, "error": f"Invalid country '{country}'. Supported: {', '.join(COUNTRIES_DATA.keys())}"})
+            errors.append(
+                {
+                    "row": row_idx,
+                    "error": f"Invalid country '{country}'. Supported: {', '.join(COUNTRIES_DATA.keys())}",
+                }
+            )
             continue
 
         try:
@@ -153,7 +188,7 @@ def import_employees_csv(db: Session, csv_text: str) -> dict[str, Any]:
             job_level=job_level,
             hire_date=date.today(),
             performance_rating=3.5,
-            is_active=True
+            is_active=True,
         )
         new_employees.append(emp)
 
@@ -169,7 +204,7 @@ def import_employees_csv(db: Session, csv_text: str) -> dict[str, Any]:
             bonus_usd=bonus_usd,
             total_compensation_usd=total_usd,
             effective_date=date.today(),
-            is_current=True
+            is_current=True,
         )
         new_salaries.append(sal)
 
@@ -184,7 +219,7 @@ def import_employees_csv(db: Session, csv_text: str) -> dict[str, Any]:
             change_percentage=100.0,
             reason="Bulk CSV upload onboarding",
             notes=None,
-            changed_by="HR Manager"
+            changed_by="HR Manager",
         )
         new_audits.append(audit)
 
@@ -201,5 +236,5 @@ def import_employees_csv(db: Session, csv_text: str) -> dict[str, Any]:
         "total_rows": total_rows,
         "imported_count": imported_count,
         "failed_count": len(errors),
-        "errors": errors[:50]
+        "errors": errors[:50],
     }

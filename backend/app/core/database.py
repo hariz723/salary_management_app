@@ -16,6 +16,7 @@ engine = create_engine(settings.DATABASE_URL, **engine_kwargs)
 
 # Apply SQLite performance tuning pragmas on connect if SQLite is used
 if "sqlite" in settings.DATABASE_URL:
+
     @event.listens_for(engine, "connect")
     def set_sqlite_pragma(dbapi_connection, connection_record):
         cursor = dbapi_connection.cursor()
@@ -25,8 +26,10 @@ if "sqlite" in settings.DATABASE_URL:
         cursor.execute("PRAGMA temp_store = MEMORY")
         cursor.close()
 
+
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
+
 
 def get_db():
     db = SessionLocal()

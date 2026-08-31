@@ -1,14 +1,54 @@
-
-
 COUNTRIES_DATA: dict[str, dict[str, str]] = {
-    "United States": {"code": "USA", "currency": "USD", "symbol": "$", "name": "US Dollar", "rate": 1.0},
-    "United Kingdom": {"code": "GBR", "currency": "GBP", "symbol": "£", "name": "British Pound", "rate": 1.28},
+    "United States": {
+        "code": "USA",
+        "currency": "USD",
+        "symbol": "$",
+        "name": "US Dollar",
+        "rate": 1.0,
+    },
+    "United Kingdom": {
+        "code": "GBR",
+        "currency": "GBP",
+        "symbol": "£",
+        "name": "British Pound",
+        "rate": 1.28,
+    },
     "Germany": {"code": "DEU", "currency": "EUR", "symbol": "€", "name": "Euro", "rate": 1.09},
-    "India": {"code": "IND", "currency": "INR", "symbol": "₹", "name": "Indian Rupee", "rate": 0.012},
-    "Singapore": {"code": "SGP", "currency": "SGD", "symbol": "S$", "name": "Singapore Dollar", "rate": 0.75},
-    "Canada": {"code": "CAN", "currency": "CAD", "symbol": "CA$", "name": "Canadian Dollar", "rate": 0.74},
-    "Australia": {"code": "AUS", "currency": "AUD", "symbol": "A$", "name": "Australian Dollar", "rate": 0.66},
-    "Japan": {"code": "JPN", "currency": "JPY", "symbol": "¥", "name": "Japanese Yen", "rate": 0.0067},
+    "India": {
+        "code": "IND",
+        "currency": "INR",
+        "symbol": "₹",
+        "name": "Indian Rupee",
+        "rate": 0.012,
+    },
+    "Singapore": {
+        "code": "SGP",
+        "currency": "SGD",
+        "symbol": "S$",
+        "name": "Singapore Dollar",
+        "rate": 0.75,
+    },
+    "Canada": {
+        "code": "CAN",
+        "currency": "CAD",
+        "symbol": "CA$",
+        "name": "Canadian Dollar",
+        "rate": 0.74,
+    },
+    "Australia": {
+        "code": "AUS",
+        "currency": "AUD",
+        "symbol": "A$",
+        "name": "Australian Dollar",
+        "rate": 0.66,
+    },
+    "Japan": {
+        "code": "JPN",
+        "currency": "JPY",
+        "symbol": "¥",
+        "name": "Japanese Yen",
+        "rate": 0.0067,
+    },
 }
 
 DEPARTMENTS = [
@@ -19,20 +59,78 @@ DEPARTMENTS = [
     "Human Resources",
     "Finance",
     "Legal",
-    "Operations"
+    "Operations",
 ]
 
 JOB_LEVELS = ["Junior", "Mid", "Senior", "Lead", "Director", "VP"]
 
 JOB_TITLES: dict[str, list[str]] = {
-    "Engineering": ["Software Engineer", "Backend Developer", "Frontend Developer", "DevOps Engineer", "Data Engineer", "QA Engineer", "Security Architect", "Principal Engineer"],
-    "Product": ["Associate Product Manager", "Product Manager", "Senior Product Manager", "Group Product Manager", "Director of Product", "VP of Product"],
-    "Sales": ["Sales Development Rep", "Account Executive", "Senior Account Executive", "Enterprise AE", "Sales Director", "VP of Global Sales"],
-    "Marketing": ["Marketing Associate", "Content Strategist", "Growth Marketer", "Product Marketing Manager", "Marketing Director", "VP of Marketing"],
-    "Human Resources": ["HR Coordinator", "Talent Acquisition Specialist", "People Ops Lead", "Total Rewards Specialist", "HR Director", "VP of People"],
-    "Finance": ["Financial Analyst", "Staff Accountant", "Finance Manager", "Controller", "Director of FP&A", "VP of Finance"],
-    "Legal": ["Paralegal", "Corporate Counsel", "Senior Counsel", "Compliance Lead", "Legal Director", "General Counsel"],
-    "Operations": ["Operations Associate", "Logistics Coordinator", "Operations Manager", "Supply Chain Analyst", "Director of Operations", "VP of Operations"]
+    "Engineering": [
+        "Software Engineer",
+        "Backend Developer",
+        "Frontend Developer",
+        "DevOps Engineer",
+        "Data Engineer",
+        "QA Engineer",
+        "Security Architect",
+        "Principal Engineer",
+    ],
+    "Product": [
+        "Associate Product Manager",
+        "Product Manager",
+        "Senior Product Manager",
+        "Group Product Manager",
+        "Director of Product",
+        "VP of Product",
+    ],
+    "Sales": [
+        "Sales Development Rep",
+        "Account Executive",
+        "Senior Account Executive",
+        "Enterprise AE",
+        "Sales Director",
+        "VP of Global Sales",
+    ],
+    "Marketing": [
+        "Marketing Associate",
+        "Content Strategist",
+        "Growth Marketer",
+        "Product Marketing Manager",
+        "Marketing Director",
+        "VP of Marketing",
+    ],
+    "Human Resources": [
+        "HR Coordinator",
+        "Talent Acquisition Specialist",
+        "People Ops Lead",
+        "Total Rewards Specialist",
+        "HR Director",
+        "VP of People",
+    ],
+    "Finance": [
+        "Financial Analyst",
+        "Staff Accountant",
+        "Finance Manager",
+        "Controller",
+        "Director of FP&A",
+        "VP of Finance",
+    ],
+    "Legal": [
+        "Paralegal",
+        "Corporate Counsel",
+        "Senior Counsel",
+        "Compliance Lead",
+        "Legal Director",
+        "General Counsel",
+    ],
+    "Operations": [
+        "Operations Associate",
+        "Logistics Coordinator",
+        "Operations Manager",
+        "Supply Chain Analyst",
+        "Director of Operations",
+        "VP of Operations",
+    ],
 }
 
 # Base benchmark salaries (USD) by Job Level
@@ -69,6 +167,7 @@ COUNTRY_MULTIPLIERS: dict[str, float] = {
     "India": 0.35,
 }
 
+
 def get_static_metadata() -> dict:
     return {
         "countries": list(COUNTRIES_DATA.keys()),
@@ -79,9 +178,12 @@ def get_static_metadata() -> dict:
         "job_titles_by_department": JOB_TITLES,
     }
 
+
 def get_band_for(department: str, job_level: str, country: str) -> tuple[float, float, float]:
     """Calculates min, mid, max USD salary band for a specific role and geography."""
-    base_min, base_mid, base_max = LEVEL_BASE_SALARY_USD.get(job_level, (70000.0, 95000.0, 120000.0))
+    base_min, base_mid, base_max = LEVEL_BASE_SALARY_USD.get(
+        job_level, (70000.0, 95000.0, 120000.0)
+    )
     dept_mult = DEPT_MULTIPLIERS.get(department, 1.0)
     country_mult = COUNTRY_MULTIPLIERS.get(country, 1.0)
 

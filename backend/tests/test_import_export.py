@@ -10,6 +10,7 @@ def test_export_csv(client, seeded_db):
     assert len(lines) >= 201  # Header + 200 employees
     assert "Employee Code,First Name,Last Name" in lines[0]
 
+
 def test_import_csv_valid(client, seeded_db):
     csv_content = """first_name,last_name,email,gender,country,department,job_title,job_level,base_salary,bonus_%,equity_usd
 John,DoeTest,john.doetest123@acme.com,Male,United States,Engineering,Senior Backend Engineer,Senior,145000,12,15000
@@ -22,6 +23,7 @@ Jane,SmithTest,jane.smithtest123@acme.com,Female,United Kingdom,Product,Product 
     assert data["total_rows"] == 2
     assert data["imported_count"] == 2
     assert data["failed_count"] == 0
+
 
 def test_import_csv_with_errors(client, seeded_db):
     csv_content = """first_name,last_name,email,gender,country,department,job_title,job_level,base_salary

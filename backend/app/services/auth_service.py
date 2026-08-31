@@ -21,11 +21,12 @@ def signup_user(db: Session, data: UserCreate) -> tuple[User, str]:
         hashed_password=hashed_pw,
         full_name=data.full_name.strip(),
         role=data.role or "HR_MANAGER",
-        is_active=True
+        is_active=True,
     )
     user = user_repo.create(new_user)
     token = create_access_token({"sub": user.id, "email": user.email, "role": user.role})
     return user, token
+
 
 def login_user(db: Session, data: UserLogin) -> tuple[User, str]:
     user_repo = UserRepository(db)

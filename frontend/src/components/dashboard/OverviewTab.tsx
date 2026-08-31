@@ -98,7 +98,6 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ onNavigateToDirectory 
             <span className="text-xs font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30">
               Live Executive Dashboard
             </span>
-            <span className="text-xs text-slate-400">10,000 Headcount Monitored</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold mt-2 tracking-tight text-white">
             ACME Global Compensation Overview

@@ -26,11 +26,21 @@ def get_overview_stats(db: Session) -> OverviewStats:
 
     if not records:
         return OverviewStats(
-            total_employees=0, total_payroll_usd=0.0, mean_salary_usd=0.0,
-            median_salary_usd=0.0, mean_total_comp_usd=0.0, median_total_comp_usd=0.0,
-            avg_bonus_percentage=0.0, total_equity_usd=0.0, active_employees=0,
-            inactive_employees=0, total_countries=0, total_departments=0,
-            underpaid_count=0, overpaid_count=0, within_band_count=0
+            total_employees=0,
+            total_payroll_usd=0.0,
+            mean_salary_usd=0.0,
+            median_salary_usd=0.0,
+            mean_total_comp_usd=0.0,
+            median_total_comp_usd=0.0,
+            avg_bonus_percentage=0.0,
+            total_equity_usd=0.0,
+            active_employees=0,
+            inactive_employees=0,
+            total_countries=0,
+            total_departments=0,
+            underpaid_count=0,
+            overpaid_count=0,
+            within_band_count=0,
         )
 
     base_salaries = np.array([r.base_salary_usd for r in records], dtype=np.float64)
@@ -70,13 +80,12 @@ def get_overview_stats(db: Session) -> OverviewStats:
         total_departments=len(departments),
         underpaid_count=underpaid,
         overpaid_count=overpaid,
-        within_band_count=within
+        within_band_count=within,
     )
 
+
 def get_pay_distribution(
-    db: Session,
-    country: str | None = None,
-    department: str | None = None
+    db: Session, country: str | None = None, department: str | None = None
 ) -> list[DistributionBucket]:
     repo = AnalyticsRepository(db)
     salaries = repo.get_total_comp_distribution_salaries(country=country, department=department)
@@ -99,14 +108,17 @@ def get_pay_distribution(
     for label, min_v, max_v in ranges:
         cnt = sum(1 for s in salaries if (s >= min_v if min_v == 0 else s > min_v) and s <= max_v)
         pct = round((cnt / total_count * 100.0), 2)
-        buckets.append(DistributionBucket(
-            range_label=label,
-            min_val=float(min_v),
-            max_val=float(max_v),
-            count=cnt,
-            percentage=pct
-        ))
+        buckets.append(
+            DistributionBucket(
+                range_label=label,
+                min_val=float(min_v),
+                max_val=float(max_v),
+                count=cnt,
+                percentage=pct,
+            )
+        )
     return buckets
+
 
 def get_department_stats(db: Session) -> list[DepartmentStats]:
     repo = AnalyticsRepository(db)
@@ -124,29 +136,41 @@ def get_department_stats(db: Session) -> list[DepartmentStats]:
         totals = np.array(dept_map[dept]["totals"], dtype=np.float64)
         bonuses = np.array(dept_map[dept]["bonuses"], dtype=np.float64)
 
-        stats.append(DepartmentStats(
-            department=dept,
-            employee_count=len(bases),
-            total_payroll_usd=round(float(np.sum(totals)), 2),
-            mean_base_usd=round(float(np.mean(bases)), 2),
-            median_base_usd=round(float(np.median(bases)), 2),
-            mean_total_comp_usd=round(float(np.mean(totals)), 2),
-            median_total_comp_usd=round(float(np.median(totals)), 2),
-            p10_usd=round(float(np.percentile(totals, 10)), 2),
-            p25_usd=round(float(np.percentile(totals, 25)), 2),
-            p75_usd=round(float(np.percentile(totals, 75)), 2),
-            p90_usd=round(float(np.percentile(totals, 90)), 2),
-            min_usd=round(float(np.min(totals)), 2),
-            max_usd=round(float(np.max(totals)), 2),
-            avg_bonus_percentage=round(float(np.mean(bonuses)), 2),
-        ))
+        stats.append(
+            DepartmentStats(
+                department=dept,
+                employee_count=len(bases),
+                total_payroll_usd=round(float(np.sum(totals)), 2),
+                mean_base_usd=round(float(np.mean(bases)), 2),
+                median_base_usd=round(float(np.median(bases)), 2),
+                mean_total_comp_usd=round(float(np.mean(totals)), 2),
+                median_total_comp_usd=round(float(np.median(totals)), 2),
+                p10_usd=round(float(np.percentile(totals, 10)), 2),
+                p25_usd=round(float(np.percentile(totals, 25)), 2),
+                p75_usd=round(float(np.percentile(totals, 75)), 2),
+                p90_usd=round(float(np.percentile(totals, 90)), 2),
+                min_usd=round(float(np.min(totals)), 2),
+                max_usd=round(float(np.max(totals)), 2),
+                avg_bonus_percentage=round(float(np.mean(bonuses)), 2),
+            )
+        )
     return stats
+
 
 def get_country_stats(db: Session) -> list[CountryStats]:
     repo = AnalyticsRepository(db)
     records = repo.get_country_salary_records()
 
-    country_map = defaultdict(lambda: {"bases_usd": [], "totals_usd": [], "local_bases": [], "code": "", "currency": "", "rate": 1.0})
+    country_map = defaultdict(
+        lambda: {
+            "bases_usd": [],
+            "totals_usd": [],
+            "local_bases": [],
+            "code": "",
+            "currency": "",
+            "rate": 1.0,
+        }
+    )
     for r in records:
         c = country_map[r.country]
         c["bases_usd"].append(r.base_salary_usd)
@@ -163,20 +187,23 @@ def get_country_stats(db: Session) -> list[CountryStats]:
         totals_usd = np.array(data["totals_usd"], dtype=np.float64)
         local_bases = np.array(data["local_bases"], dtype=np.float64)
 
-        stats.append(CountryStats(
-            country=country,
-            country_code=data["code"],
-            currency=data["currency"],
-            exchange_rate=data["rate"],
-            employee_count=len(bases_usd),
-            total_payroll_usd=round(float(np.sum(totals_usd)), 2),
-            mean_base_usd=round(float(np.mean(bases_usd)), 2),
-            median_base_usd=round(float(np.median(bases_usd)), 2),
-            mean_total_comp_usd=round(float(np.mean(totals_usd)), 2),
-            median_total_comp_usd=round(float(np.median(totals_usd)), 2),
-            total_local_currency=round(float(np.sum(local_bases)), 2)
-        ))
+        stats.append(
+            CountryStats(
+                country=country,
+                country_code=data["code"],
+                currency=data["currency"],
+                exchange_rate=data["rate"],
+                employee_count=len(bases_usd),
+                total_payroll_usd=round(float(np.sum(totals_usd)), 2),
+                mean_base_usd=round(float(np.mean(bases_usd)), 2),
+                median_base_usd=round(float(np.median(bases_usd)), 2),
+                mean_total_comp_usd=round(float(np.mean(totals_usd)), 2),
+                median_total_comp_usd=round(float(np.median(totals_usd)), 2),
+                total_local_currency=round(float(np.sum(local_bases)), 2),
+            )
+        )
     return stats
+
 
 def get_job_level_stats(db: Session) -> list[JobLevelStats]:
     repo = AnalyticsRepository(db)
@@ -195,16 +222,19 @@ def get_job_level_stats(db: Session) -> list[JobLevelStats]:
             totals = np.array(level_map[level]["totals"], dtype=np.float64)
             equities = np.array(level_map[level]["equities"], dtype=np.float64)
 
-            stats.append(JobLevelStats(
-                job_level=level,
-                employee_count=len(bases),
-                mean_base_usd=round(float(np.mean(bases)), 2),
-                median_base_usd=round(float(np.median(bases)), 2),
-                mean_total_comp_usd=round(float(np.mean(totals)), 2),
-                median_total_comp_usd=round(float(np.median(totals)), 2),
-                avg_equity_usd=round(float(np.mean(equities)), 2)
-            ))
+            stats.append(
+                JobLevelStats(
+                    job_level=level,
+                    employee_count=len(bases),
+                    mean_base_usd=round(float(np.mean(bases)), 2),
+                    median_base_usd=round(float(np.median(bases)), 2),
+                    mean_total_comp_usd=round(float(np.mean(totals)), 2),
+                    median_total_comp_usd=round(float(np.median(totals)), 2),
+                    avg_equity_usd=round(float(np.mean(equities)), 2),
+                )
+            )
     return stats
+
 
 def get_gender_pay_gap(db: Session) -> GenderPayGapAnalysis:
     repo = AnalyticsRepository(db)
@@ -224,15 +254,17 @@ def get_gender_pay_gap(db: Session) -> GenderPayGapAnalysis:
         if g in overall_gender_map:
             bases = np.array(overall_gender_map[g]["bases"], dtype=np.float64)
             totals = np.array(overall_gender_map[g]["totals"], dtype=np.float64)
-            gender_stats.append(GenderGroupStats(
-                gender=g,
-                count=len(bases),
-                percentage=round(len(bases) / total_count * 100.0, 2),
-                mean_base_usd=round(float(np.mean(bases)), 2),
-                median_base_usd=round(float(np.median(bases)), 2),
-                mean_total_comp_usd=round(float(np.mean(totals)), 2),
-                median_total_comp_usd=round(float(np.median(totals)), 2)
-            ))
+            gender_stats.append(
+                GenderGroupStats(
+                    gender=g,
+                    count=len(bases),
+                    percentage=round(len(bases) / total_count * 100.0, 2),
+                    mean_base_usd=round(float(np.mean(bases)), 2),
+                    median_base_usd=round(float(np.median(bases)), 2),
+                    mean_total_comp_usd=round(float(np.mean(totals)), 2),
+                    median_total_comp_usd=round(float(np.median(totals)), 2),
+                )
+            )
 
     dept_breakdown: list[GenderDepartmentGap] = []
     for dept in sorted(dept_gender_map.keys()):
@@ -247,14 +279,16 @@ def get_gender_pay_gap(db: Session) -> GenderPayGapAnalysis:
         gap_pct = round(((m_med - f_med) / m_med * 100.0), 2) if m_med > 0 else 0.0
         ratio = round((f_med / m_med), 3) if m_med > 0 else 1.0
 
-        dept_breakdown.append(GenderDepartmentGap(
-            department=dept,
-            male_median_usd=round(m_med, 2),
-            female_median_usd=round(f_med, 2),
-            non_binary_median_usd=round(nb_med, 2),
-            gap_percentage_female_vs_male=gap_pct,
-            female_to_male_ratio=ratio
-        ))
+        dept_breakdown.append(
+            GenderDepartmentGap(
+                department=dept,
+                male_median_usd=round(m_med, 2),
+                female_median_usd=round(f_med, 2),
+                non_binary_median_usd=round(nb_med, 2),
+                gap_percentage_female_vs_male=gap_pct,
+                female_to_male_ratio=ratio,
+            )
+        )
 
     male_overall = np.median(overall_gender_map.get("Male", {}).get("bases", [1.0]))
     female_overall = np.median(overall_gender_map.get("Female", {}).get("bases", [1.0]))
@@ -265,8 +299,9 @@ def get_gender_pay_gap(db: Session) -> GenderPayGapAnalysis:
         overall_by_gender=gender_stats,
         department_breakdown=dept_breakdown,
         overall_female_to_male_ratio=overall_ratio,
-        overall_gap_percentage=overall_gap
+        overall_gap_percentage=overall_gap,
     )
+
 
 def get_band_compliance(db: Session) -> BandComplianceSummary:
     repo = AnalyticsRepository(db)
@@ -287,40 +322,44 @@ def get_band_compliance(db: Session) -> BandComplianceSummary:
             dev = min_b - sal
             cost_to_minimum += dev
             dev_pct = round((dev / min_b * 100.0), 2)
-            outliers.append(OutlierEmployee(
-                employee_id=r.id,
-                employee_code=r.employee_code,
-                name=f"{r.first_name} {r.last_name}",
-                department=r.department,
-                job_level=r.job_level,
-                country=r.country,
-                salary_usd=round(sal, 2),
-                band_min_usd=min_b,
-                band_mid_usd=mid_b,
-                band_max_usd=max_b,
-                status="UNDERPAID",
-                deviation_usd=round(dev, 2),
-                deviation_percentage=dev_pct
-            ))
+            outliers.append(
+                OutlierEmployee(
+                    employee_id=r.id,
+                    employee_code=r.employee_code,
+                    name=f"{r.first_name} {r.last_name}",
+                    department=r.department,
+                    job_level=r.job_level,
+                    country=r.country,
+                    salary_usd=round(sal, 2),
+                    band_min_usd=min_b,
+                    band_mid_usd=mid_b,
+                    band_max_usd=max_b,
+                    status="UNDERPAID",
+                    deviation_usd=round(dev, 2),
+                    deviation_percentage=dev_pct,
+                )
+            )
         elif sal > max_b:
             overpaid_cnt += 1
             dev = sal - max_b
             dev_pct = round((dev / max_b * 100.0), 2)
-            outliers.append(OutlierEmployee(
-                employee_id=r.id,
-                employee_code=r.employee_code,
-                name=f"{r.first_name} {r.last_name}",
-                department=r.department,
-                job_level=r.job_level,
-                country=r.country,
-                salary_usd=round(sal, 2),
-                band_min_usd=min_b,
-                band_mid_usd=mid_b,
-                band_max_usd=max_b,
-                status="OVERPAID",
-                deviation_usd=round(dev, 2),
-                deviation_percentage=dev_pct
-            ))
+            outliers.append(
+                OutlierEmployee(
+                    employee_id=r.id,
+                    employee_code=r.employee_code,
+                    name=f"{r.first_name} {r.last_name}",
+                    department=r.department,
+                    job_level=r.job_level,
+                    country=r.country,
+                    salary_usd=round(sal, 2),
+                    band_min_usd=min_b,
+                    band_mid_usd=mid_b,
+                    band_max_usd=max_b,
+                    status="OVERPAID",
+                    deviation_usd=round(dev, 2),
+                    deviation_percentage=dev_pct,
+                )
+            )
         else:
             within_cnt += 1
 
@@ -334,8 +373,9 @@ def get_band_compliance(db: Session) -> BandComplianceSummary:
         overpaid_count=overpaid_cnt,
         compliance_rate_percentage=compliance_rate,
         cost_to_bring_to_minimum_usd=round(cost_to_minimum, 2),
-        top_outliers=outliers[:50]
+        top_outliers=outliers[:50],
     )
+
 
 def get_hr_answers(db: Session) -> list[HRQuestionCard]:
     overview = get_overview_stats(db)
@@ -360,8 +400,8 @@ def get_hr_answers(db: Session) -> list[HRQuestionCard]:
             detailed_data={
                 "overall_ratio": gender_gap.overall_female_to_male_ratio,
                 "overall_gap_pct": gender_gap.overall_gap_percentage,
-                "departments": [d.model_dump() for d in gender_gap.department_breakdown]
-            }
+                "departments": [d.model_dump() for d in gender_gap.department_breakdown],
+            },
         ),
         HRQuestionCard(
             id="q2_band_cost",
@@ -372,8 +412,8 @@ def get_hr_answers(db: Session) -> list[HRQuestionCard]:
                 "cost_usd": band_comp.cost_to_bring_to_minimum_usd,
                 "underpaid_count": band_comp.underpaid_count,
                 "overpaid_count": band_comp.overpaid_count,
-                "compliance_rate": band_comp.compliance_rate_percentage
-            }
+                "compliance_rate": band_comp.compliance_rate_percentage,
+            },
         ),
         HRQuestionCard(
             id="q3_top_departments",
@@ -382,23 +422,23 @@ def get_hr_answers(db: Session) -> list[HRQuestionCard]:
             summary_answer=f"{top_dept.department if top_dept else 'N/A'} has the highest average total comp (${top_dept.mean_total_comp_usd:,.2f} USD). {top_bonus_dept.department if top_bonus_dept else 'N/A'} leads in bonus percentage ({top_bonus_dept.avg_bonus_percentage:.1f}%).",
             detailed_data={
                 "top_department": top_dept.model_dump() if top_dept else {},
-                "top_bonus_department": top_bonus_dept.model_dump() if top_bonus_dept else {}
-            }
+                "top_bonus_department": top_bonus_dept.model_dump() if top_bonus_dept else {},
+            },
         ),
         HRQuestionCard(
             id="q4_country_expenditure",
             question="How is payroll distributed across global regions and currencies?",
             category="Global Payroll",
             summary_answer=f"Payroll is allocated across {len(country_stats)} countries totaling ${overview.total_payroll_usd:,.2f} USD. {top_country.country if top_country else 'N/A'} has the highest per-employee average compensation (${top_country.mean_total_comp_usd:,.2f} USD).",
-            detailed_data={
-                "countries": [c.model_dump() for c in country_stats]
-            }
+            detailed_data={"countries": [c.model_dump() for c in country_stats]},
         ),
         HRQuestionCard(
             id="q5_top_earners",
             question="Who are the top 5 highest compensated individuals across the organization?",
             category="Executive & Key Talent",
-            summary_answer=f"Top compensated roles are led by executive and technical leadership, capped by {top_earners[0].first_name} {top_earners[0].last_name} ({top_earners[0].job_title}) at ${top_earners[0].total_compensation_usd:,.2f} USD." if top_earners else "No employee records found.",
+            summary_answer=f"Top compensated roles are led by executive and technical leadership, capped by {top_earners[0].first_name} {top_earners[0].last_name} ({top_earners[0].job_title}) at ${top_earners[0].total_compensation_usd:,.2f} USD."
+            if top_earners
+            else "No employee records found.",
             detailed_data={
                 "top_earners": [
                     {
@@ -407,10 +447,11 @@ def get_hr_answers(db: Session) -> list[HRQuestionCard]:
                         "title": e.job_title,
                         "department": e.department,
                         "country": e.country,
-                        "total_comp_usd": round(e.total_compensation_usd, 2)
-                    } for e in top_earners
+                        "total_comp_usd": round(e.total_compensation_usd, 2),
+                    }
+                    for e in top_earners
                 ]
-            }
-        )
+            },
+        ),
     ]
     return cards

@@ -10,33 +10,29 @@ SECRET_KEY = "acme_salary_jwt_secret_key_change_in_production_super_secure_key"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 24 hours
 
+
 def hash_password(password: str) -> str:
     """Generates a secure salted SHA-256 password hash."""
     salt = secrets.token_hex(16)
-    key = hashlib.pbkdf2_hmac(
-        "sha256",
-        password.encode("utf-8"),
-        salt.encode("utf-8"),
-        100000
-    )
+    key = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt.encode("utf-8"), 100000)
     return f"{salt}${key.hex()}"
+
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verifies a plain password against the stored salted hash."""
     try:
         salt, key_hex = hashed_password.split("$")
         key = hashlib.pbkdf2_hmac(
-            "sha256",
-            plain_password.encode("utf-8"),
-            salt.encode("utf-8"),
-            100000
+            "sha256", plain_password.encode("utf-8"), salt.encode("utf-8"), 100000
         )
         return hmac.compare_digest(key.hex(), key_hex)
     except Exception:
         return False
 
+
 def _base64url_encode(data: bytes) -> str:
     return base64.urlsafe_b64encode(data).decode("utf-8").rstrip("=")
+
 
 def _base64url_decode(data: str) -> bytes:
     padding = 4 - (len(data) % 4)
@@ -44,7 +40,10 @@ def _base64url_decode(data: str) -> bytes:
         data += "=" * padding
     return base64.urlsafe_b64decode(data.encode("utf-8"))
 
-def create_access_token(data: dict[str, Any], expires_delta_minutes: int = ACCESS_TOKEN_EXPIRE_MINUTES) -> str:
+
+def create_access_token(
+    data: dict[str, Any], expires_delta_minutes: int = ACCESS_TOKEN_EXPIRE_MINUTES
+) -> str:
     """Creates a standard signed JWT access token."""
     header = {"alg": "HS256", "typ": "JWT"}
     payload = data.copy()
@@ -59,6 +58,7 @@ def create_access_token(data: dict[str, Any], expires_delta_minutes: int = ACCES
     sig_b64 = _base64url_encode(signature)
 
     return f"{header_b64}.{payload_b64}.{sig_b64}"
+
 
 def decode_access_token(token: str) -> dict[str, Any] | None:
     """Decodes and validates a JWT token signature and expiration."""

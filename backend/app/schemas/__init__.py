@@ -53,5 +53,5 @@ __all__ = [
     "TokenPayload",
     "UserCreate",
     "UserLogin",
-    "UserOut"
+    "UserOut",
 ]

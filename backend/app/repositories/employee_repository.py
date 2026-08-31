@@ -1,4 +1,3 @@
-
 from sqlalchemy import and_, asc, desc, or_
 from sqlalchemy.orm import Session
 
@@ -34,12 +33,12 @@ class EmployeeRepository:
         min_salary_usd: float | None = None,
         max_salary_usd: float | None = None,
         sort_by: str = "created_at",
-        sort_order: str = "desc"
+        sort_order: str = "desc",
     ) -> tuple[list[tuple[Employee, SalaryRecord]], int]:
         # Base query joining Employee with current active SalaryRecord
         query = self.db.query(Employee, SalaryRecord).join(
             SalaryRecord,
-            and_(SalaryRecord.employee_id == Employee.id, SalaryRecord.is_current == True)
+            and_(SalaryRecord.employee_id == Employee.id, SalaryRecord.is_current == True),
         )
 
         # Apply search filter
@@ -103,3 +102,16 @@ class EmployeeRepository:
 
     def bulk_add(self, employees: list[Employee]) -> None:
         self.db.bulk_save_objects(employees)
+
+    def delete(self, employee_id: str) -> bool:
+        emp = self.get_by_id(employee_id)
+        if emp:
+            self.db.delete(emp)
+            self.db.commit()
+            return True
+        return False
+
+    def bulk_delete(self, employee_ids: list[str]) -> int:
+        count = self.db.query(Employee).filter(Employee.id.in_(employee_ids)).delete(synchronize_session=False)
+        self.db.commit()
+        return count

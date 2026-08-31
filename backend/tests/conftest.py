@@ -6,14 +6,21 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+TEST_DATABASE_URL = "sqlite:///./test_salary_app.db"
+os.environ["DATABASE_URL"] = TEST_DATABASE_URL
+
 # Add backend directory to sys.path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from app.core.database import Base, get_db
-from app.main import app
-from app.scripts.seed_data import generate_10k_employees, seed_exchange_rates, seed_salary_bands
+from app.core.database import Base, get_db  # noqa: E402
+from app.main import app  # noqa: E402
+from scripts.seed_data import (  # noqa: E402
+    generate_10k_employees,
+    seed_exchange_rates,
+    seed_salary_bands,
+    seed_users,
+)
 
-TEST_DATABASE_URL = "sqlite:///./test_salary_app.db"
 
 @pytest.fixture(scope="session")
 def test_engine():
@@ -27,11 +34,13 @@ def test_engine():
         except OSError:
             pass
 
+
 @pytest.fixture(scope="session")
 def seeded_db(test_engine):
     TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_engine)
     db = TestingSessionLocal()
     try:
+        seed_users(db)
         seed_exchange_rates(db)
         seed_salary_bands(db)
         # Seed 200 sample employees for fast, deterministic unit test suite
@@ -39,6 +48,7 @@ def seeded_db(test_engine):
         yield db
     finally:
         db.close()
+
 
 @pytest.fixture(scope="function")
 def db_session(test_engine):
@@ -48,6 +58,7 @@ def db_session(test_engine):
         yield db
     finally:
         db.close()
+
 
 @pytest.fixture(scope="function")
 def client(db_session):

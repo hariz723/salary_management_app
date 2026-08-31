@@ -73,6 +73,18 @@ export const getEmployeeById = async (id: string): Promise<EmployeeDetail> => {
   return res.data;
 };
 
+export const deleteEmployee = async (id: string): Promise<{ status: string; message: string }> => {
+  const res = await apiClient.delete<{ status: string; message: string }>(`/employees/${id}`);
+  return res.data;
+};
+
+export const bulkDeleteEmployees = async (ids: string[]): Promise<{ status: string; deleted_count: number }> => {
+  const res = await apiClient.post<{ status: string; deleted_count: number }>('/employees/bulk-delete', {
+    employee_ids: ids,
+  });
+  return res.data;
+};
+
 // Salary API
 export const adjustSalary = async (
   employeeId: string,

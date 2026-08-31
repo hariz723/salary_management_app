@@ -11,8 +11,12 @@ class SalaryAuditLog(Base):
     __tablename__ = "salary_audit_logs"
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    employee_id = Column(String(36), ForeignKey("employees.id", ondelete="CASCADE"), nullable=False, index=True)
-    change_type = Column(String(50), nullable=False)  # ADJUSTMENT, PROMOTION, ANNUAL_REVIEW, CORRECTION, INITIAL_SEED
+    employee_id = Column(
+        String(36), ForeignKey("employees.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    change_type = Column(
+        String(50), nullable=False
+    )  # ADJUSTMENT, PROMOTION, ANNUAL_REVIEW, CORRECTION, INITIAL_SEED
     previous_base = Column(Float, nullable=False)
     new_base = Column(Float, nullable=False)
     previous_total_usd = Column(Float, nullable=False)
@@ -26,6 +30,4 @@ class SalaryAuditLog(Base):
     # Relationships
     employee = relationship("Employee", back_populates="audit_logs")
 
-    __table_args__ = (
-        Index("ix_audit_emp_created", "employee_id", "created_at"),
-    )
+    __table_args__ = (Index("ix_audit_emp_created", "employee_id", "created_at"),)

@@ -264,6 +264,7 @@ export const PayParityTab: React.FC = () => {
           dataSource={bandData.top_outliers}
           rowKey="employee_id"
           pagination={{ pageSize: 10, size: 'small' }}
+          scroll={{ x: 800 }}
           className="text-xs"
         />
       </div>

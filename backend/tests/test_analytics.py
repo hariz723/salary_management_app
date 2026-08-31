@@ -1,4 +1,3 @@
-
 def test_analytics_overview(client, seeded_db):
     response = client.get("/api/v1/analytics/overview")
     assert response.status_code == 200
@@ -10,6 +9,7 @@ def test_analytics_overview(client, seeded_db):
     assert data["total_countries"] == 8
     assert data["total_departments"] == 8
 
+
 def test_analytics_departments(client, seeded_db):
     response = client.get("/api/v1/analytics/departments")
     assert response.status_code == 200
@@ -17,7 +17,14 @@ def test_analytics_departments(client, seeded_db):
     assert len(data) == 8
     for dept in data:
         assert dept["employee_count"] > 0
-        assert dept["p10_usd"] <= dept["p25_usd"] <= dept["median_total_comp_usd"] <= dept["p75_usd"] <= dept["p90_usd"]
+        assert (
+            dept["p10_usd"]
+            <= dept["p25_usd"]
+            <= dept["median_total_comp_usd"]
+            <= dept["p75_usd"]
+            <= dept["p90_usd"]
+        )
+
 
 def test_analytics_countries(client, seeded_db):
     response = client.get("/api/v1/analytics/countries")
@@ -26,6 +33,7 @@ def test_analytics_countries(client, seeded_db):
     assert len(data) == 8
     for c in data:
         assert c["total_payroll_usd"] > 0
+
 
 def test_analytics_gender_pay_gap(client, seeded_db):
     response = client.get("/api/v1/analytics/gender-pay-gap")
@@ -36,6 +44,7 @@ def test_analytics_gender_pay_gap(client, seeded_db):
     assert len(data["overall_by_gender"]) >= 2
     assert "overall_female_to_male_ratio" in data
 
+
 def test_analytics_band_compliance(client, seeded_db):
     response = client.get("/api/v1/analytics/band-compliance")
     assert response.status_code == 200
@@ -43,6 +52,7 @@ def test_analytics_band_compliance(client, seeded_db):
     assert data["total_employees"] >= 200
     assert "compliance_rate_percentage" in data
     assert "cost_to_bring_to_minimum_usd" in data
+
 
 def test_analytics_hr_questions(client, seeded_db):
     response = client.get("/api/v1/analytics/hr-questions")

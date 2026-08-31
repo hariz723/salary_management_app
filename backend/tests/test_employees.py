@@ -1,4 +1,3 @@
-
 def test_list_employees_pagination(client, seeded_db):
     response = client.get("/api/v1/employees?page=1&page_size=20")
     assert response.status_code == 200
@@ -8,6 +7,7 @@ def test_list_employees_pagination(client, seeded_db):
     assert len(data["items"]) == 20
     assert data["page"] == 1
     assert data["page_size"] == 20
+
 
 def test_list_employees_filters(client, seeded_db):
     # Filter by country
@@ -24,6 +24,7 @@ def test_list_employees_filters(client, seeded_db):
     for item in data["items"]:
         assert item["department"] == "Engineering"
 
+
 def test_get_employee_detail(client, seeded_db):
     # First get an employee id
     list_resp = client.get("/api/v1/employees?page=1&page_size=1")
@@ -38,6 +39,7 @@ def test_get_employee_detail(client, seeded_db):
     assert "audit_logs" in data
     assert data["current_salary"] is not None
     assert len(data["salary_history"]) >= 1
+
 
 def test_get_nonexistent_employee(client, seeded_db):
     response = client.get("/api/v1/employees/non-existent-uuid")

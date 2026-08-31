@@ -5,12 +5,12 @@ import time
 import uuid
 from datetime import date, datetime, timedelta
 
-import numpy as np
 from faker import Faker
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.core.database import Base, SessionLocal, engine
+from app.core.logger import get_logger
 from app.core.security import hash_password
 from app.models.audit_log import SalaryAuditLog
 from app.models.employee import Employee
@@ -29,13 +29,16 @@ from app.services.metadata_service import (
     get_band_for,
 )
 
+logger = get_logger("seed_data")
+
 random.seed(42)
-np.random.seed(42)
 fake = Faker()
 
+
 def seed_users(db):
-    print("Seeding default auth users (HR Manager, Admin)...")
-    db.query(User).delete()
+    if db.query(User).count() > 0:
+        return
+    logger.info("Seeding default auth users (HR Manager, Admin, Executive)...")
     default_users = [
         User(
             id=str(uuid.uuid4()),
@@ -44,7 +47,7 @@ def seed_users(db):
             full_name="Sarah Jenkins (HR Manager)",
             role="HR_MANAGER",
             is_active=True,
-            created_at=datetime.utcnow()
+            created_at=datetime.utcnow(),
         ),
         User(
             id=str(uuid.uuid4()),
@@ -53,7 +56,7 @@ def seed_users(db):
             full_name="System Administrator",
             role="HR_ADMIN",
             is_active=True,
-            created_at=datetime.utcnow()
+            created_at=datetime.utcnow(),
         ),
         User(
             id=str(uuid.uuid4()),
@@ -62,33 +65,37 @@ def seed_users(db):
             full_name="Chief People Officer",
             role="EXECUTIVE",
             is_active=True,
-            created_at=datetime.utcnow()
-        )
+            created_at=datetime.utcnow(),
+        ),
     ]
     db.bulk_save_objects(default_users)
     db.commit()
 
+
 def seed_exchange_rates(db):
-    print("Seeding exchange rates...")
+    if db.query(ExchangeRate).count() > 0:
+        return
+    logger.info("Seeding exchange rates...")
     sal_repo = SalaryRepository(db)
-    db.query(ExchangeRate).delete()
     rates = [
         ExchangeRate(
             currency_code=data["currency"],
-            rate_to_usd=data["rate"],
+            rate_to_usd=float(data["rate"]),
             symbol=data["symbol"],
             currency_name=data["name"],
-            last_updated=datetime.utcnow()
+            last_updated=datetime.utcnow(),
         )
-        for country, data in COUNTRIES_DATA.items()
+        for _, data in COUNTRIES_DATA.items()
     ]
     sal_repo.bulk_add_exchange_rates(rates)
     db.commit()
 
+
 def seed_salary_bands(db):
-    print("Seeding salary bands across departments, levels, and countries...")
+    if db.query(SalaryBand).count() > 0:
+        return
+    logger.info("Seeding salary bands...")
     sal_repo = SalaryRepository(db)
-    db.query(SalaryBand).delete()
     bands = []
     for dept in DEPARTMENTS:
         for lvl in JOB_LEVELS:
@@ -100,23 +107,32 @@ def seed_salary_bands(db):
                         department=dept,
                         job_level=lvl,
                         country=country,
-                        min_salary_usd=min_b,
-                        mid_salary_usd=mid_b,
-                        max_salary_usd=max_b
+                        min_salary_usd=float(min_b),
+                        mid_salary_usd=float(mid_b),
+                        max_salary_usd=float(max_b),
                     )
                 )
     sal_repo.bulk_add_salary_bands(bands)
     db.commit()
 
+
 CITIES_BY_COUNTRY = {
-    "United States": ["New York", "San Francisco", "Austin", "Seattle", "Chicago", "Boston", "Denver"],
+    "United States": [
+        "New York",
+        "San Francisco",
+        "Austin",
+        "Seattle",
+        "Chicago",
+        "Boston",
+        "Denver",
+    ],
     "United Kingdom": ["London", "Manchester", "Edinburgh", "Bristol", "Cambridge", "Birmingham"],
     "Germany": ["Berlin", "Munich", "Frankfurt", "Hamburg", "Stuttgart", "Cologne"],
     "India": ["Bengaluru", "Hyderabad", "Pune", "Mumbai", "Delhi NCR", "Chennai"],
     "Singapore": ["Singapore Downtown", "Jurong East", "Tampines", "One-North", "Marina Bay"],
     "Canada": ["Toronto", "Vancouver", "Montreal", "Ottawa", "Calgary", "Waterloo"],
     "Australia": ["Sydney", "Melbourne", "Brisbane", "Perth", "Canberra"],
-    "Japan": ["Tokyo", "Osaka", "Kyoto", "Yokohama", "Fukuoka", "Nagoya"]
+    "Japan": ["Tokyo", "Osaka", "Kyoto", "Yokohama", "Fukuoka", "Nagoya"],
 }
 
 COUNTRY_WEIGHTS = {
@@ -127,7 +143,7 @@ COUNTRY_WEIGHTS = {
     "Canada": 0.08,
     "Singapore": 0.05,
     "Australia": 0.04,
-    "Japan": 0.04
+    "Japan": 0.04,
 }
 
 LEVEL_WEIGHTS = {
@@ -136,7 +152,7 @@ LEVEL_WEIGHTS = {
     "Senior": 0.22,
     "Lead": 0.09,
     "Director": 0.04,
-    "VP": 0.01
+    "VP": 0.01,
 }
 
 BONUS_RANGES = {
@@ -145,7 +161,7 @@ BONUS_RANGES = {
     "Senior": (10.0, 18.0),
     "Lead": (15.0, 25.0),
     "Director": (20.0, 35.0),
-    "VP": (30.0, 50.0)
+    "VP": (30.0, 50.0),
 }
 
 EQUITY_RANGES = {
@@ -154,11 +170,18 @@ EQUITY_RANGES = {
     "Senior": (10000.0, 25000.0),
     "Lead": (20000.0, 45000.0),
     "Director": (45000.0, 90000.0),
-    "VP": (90000.0, 200000.0)
+    "VP": (90000.0, 200000.0),
 }
 
-def generate_10k_employees(db, total_count=10000):
-    print(f"Clearing existing employees and generating {total_count} realistic records...")
+
+def generate_employees(db, total_count=1000):
+    if db.query(Employee).count() >= total_count:
+        logger.info(
+            f"Database already contains {db.query(Employee).count()} employees. Skipping generation."
+        )
+        return
+
+    logger.info(f"Generating {total_count} employees...")
     emp_repo = EmployeeRepository(db)
     sal_repo = SalaryRepository(db)
     audit_repo = AuditLogRepository(db)
@@ -181,7 +204,7 @@ def generate_10k_employees(db, total_count=10000):
     end_date = date(2026, 8, 1)
     days_range = (end_date - start_date).days
 
-    batch_size = 2000
+    batch_size = 500
     employees_batch = []
     salaries_batch = []
     audits_batch = []
@@ -197,7 +220,13 @@ def generate_10k_employees(db, total_count=10000):
         city = random.choice(CITIES_BY_COUNTRY[country])
         gender = random.choices(genders, weights=g_weights, k=1)[0]
 
-        first_name = fake.first_name_female() if gender == "Female" else fake.first_name_male() if gender == "Male" else fake.first_name()
+        first_name = (
+            fake.first_name_female()
+            if gender == "Female"
+            else fake.first_name_male()
+            if gender == "Male"
+            else fake.first_name()
+        )
         last_name = fake.last_name()
 
         base_email = f"{first_name.lower()}.{last_name.lower()}@acme.com"
@@ -213,31 +242,34 @@ def generate_10k_employees(db, total_count=10000):
         job_title = random.choice(JOB_TITLES[dept])
 
         hire_date = start_date + timedelta(days=random.randint(0, days_range))
-        performance_rating = round(np.clip(np.random.normal(3.4, 0.7), 1.0, 5.0), 1)
+        rating_raw = max(1.0, min(5.0, random.gauss(3.4, 0.7)))
+        performance_rating = float(round(rating_raw, 1))
         is_active = random.random() > 0.03
 
         min_b, mid_b, max_b = get_band_for(dept, level, country)
-        rate = c_meta["rate"]
+        rate = float(c_meta["rate"])
         currency = c_meta["currency"]
 
         outlier_roll = random.random()
         if outlier_roll < 0.03:
-            sal_usd = round(min_b * random.uniform(0.78, 0.96), 2)
+            sal_usd = float(round(min_b * random.uniform(0.78, 0.96), 2))
         elif outlier_roll > 0.97:
-            sal_usd = round(max_b * random.uniform(1.04, 1.25), 2)
+            sal_usd = float(round(max_b * random.uniform(1.04, 1.25), 2))
         else:
-            sal_usd = round(np.clip(np.random.normal(mid_b, (max_b - min_b) / 4.5), min_b, max_b), 2)
+            std = (max_b - min_b) / 4.5
+            val = max(min_b, min(max_b, random.gauss(mid_b, std)))
+            sal_usd = float(round(val, 2))
 
-        local_base = round(sal_usd / rate, 2)
-        base_salary_usd = round(local_base * rate, 2)
+        local_base = float(round(sal_usd / rate, 2))
+        base_salary_usd = float(round(local_base * rate, 2))
 
         bonus_min, bonus_max = BONUS_RANGES[level]
-        bonus_pct = round(random.uniform(bonus_min, bonus_max), 1)
-        bonus_usd = round(base_salary_usd * (bonus_pct / 100.0), 2)
+        bonus_pct = float(round(random.uniform(bonus_min, bonus_max), 1))
+        bonus_usd = float(round(base_salary_usd * (bonus_pct / 100.0), 2))
 
         eq_min, eq_max = EQUITY_RANGES[level]
-        equity_usd = round(random.uniform(eq_min, eq_max), 2)
-        total_comp_usd = round(base_salary_usd + bonus_usd + equity_usd, 2)
+        equity_usd = float(round(random.uniform(eq_min, eq_max), 2))
+        total_comp_usd = float(round(base_salary_usd + bonus_usd + equity_usd, 2))
 
         emp = Employee(
             id=emp_id,
@@ -255,7 +287,7 @@ def generate_10k_employees(db, total_count=10000):
             hire_date=hire_date,
             performance_rating=performance_rating,
             is_active=is_active,
-            created_at=datetime.utcnow()
+            created_at=datetime.utcnow(),
         )
         employees_batch.append(emp)
 
@@ -272,7 +304,7 @@ def generate_10k_employees(db, total_count=10000):
             total_compensation_usd=total_comp_usd,
             effective_date=hire_date,
             is_current=True,
-            created_at=datetime.utcnow()
+            created_at=datetime.utcnow(),
         )
         salaries_batch.append(sal)
 
@@ -288,7 +320,7 @@ def generate_10k_employees(db, total_count=10000):
             reason="Initial onboarding hire compensation",
             notes="Baseline generated seed record",
             changed_by="HR System Migration",
-            created_at=datetime.utcnow()
+            created_at=datetime.utcnow(),
         )
         audits_batch.append(audit)
 
@@ -300,7 +332,6 @@ def generate_10k_employees(db, total_count=10000):
             employees_batch.clear()
             salaries_batch.clear()
             audits_batch.clear()
-            print(f"  -> Inserted {i}/{total_count} records...")
 
     if employees_batch:
         emp_repo.bulk_add(employees_batch)
@@ -309,7 +340,11 @@ def generate_10k_employees(db, total_count=10000):
         db.commit()
 
     duration = time.time() - t0
-    print(f"Successfully seeded {total_count} employees and salary records in {duration:.2f} seconds!")
+    logger.info(f"Successfully generated {total_count} employee records in {duration:.2f}s.")
+
+
+generate_10k_employees = generate_employees
+
 
 def main():
     Base.metadata.create_all(bind=engine)
@@ -318,9 +353,10 @@ def main():
         seed_users(db)
         seed_exchange_rates(db)
         seed_salary_bands(db)
-        generate_10k_employees(db, 10000)
+        generate_employees(db, 1000)
     finally:
         db.close()
+
 
 if __name__ == "__main__":
     main()

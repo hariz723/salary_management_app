@@ -85,7 +85,7 @@ export const EmployeeDrawer: React.FC<EmployeeDrawerProps> = ({
           </div>
         }
         placement="right"
-        width={620}
+        width={typeof window !== 'undefined' && window.innerWidth < 640 ? '100%' : 620}
         onClose={onClose}
         open={!!employeeId}
         destroyOnClose

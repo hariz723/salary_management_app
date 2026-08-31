@@ -7,8 +7,9 @@ import {
   DollarSign,
   Sparkles,
   ArrowRight,
+  CheckCircle2,
 } from 'lucide-react';
-import { Alert, Button, Input, Select } from 'antd';
+import { Alert, Button, Input, Select, message } from 'antd';
 
 export const LoginPage: React.FC = () => {
   const { login, signup } = useAuth();
@@ -19,10 +20,12 @@ export const LoginPage: React.FC = () => {
   const [role, setRole] = useState('HR_MANAGER');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
+    setSuccessMsg(null);
     setLoading(true);
 
     try {
@@ -30,6 +33,11 @@ export const LoginPage: React.FC = () => {
         await login(email, password);
       } else {
         await signup({ email, password, full_name: fullName, role });
+        message.success('Account created successfully! Please sign in with your credentials.');
+        setSuccessMsg('Account created successfully! Please enter your password to sign in.');
+        setIsLogin(true);
+        setPassword('');
+        setFullName('');
       }
     } catch (err: any) {
       const msg = err.response?.data?.detail || err.message || 'Authentication failed';
@@ -44,6 +52,7 @@ export const LoginPage: React.FC = () => {
     setPassword(demoPass);
     setIsLogin(true);
     setErrorMsg(null);
+    setSuccessMsg(null);
   };
 
   return (
@@ -54,7 +63,7 @@ export const LoginPage: React.FC = () => {
         </div>
         <h2 className="text-3xl font-extrabold text-white tracking-tight">ACME Corporation</h2>
         <p className="mt-2 text-sm text-slate-300">
-          Global Salary & Compensation Intelligence for 10,000 Employees
+          Global Salary & Compensation Intelligence
         </p>
       </div>
 
@@ -90,6 +99,7 @@ export const LoginPage: React.FC = () => {
               onClick={() => {
                 setIsLogin(true);
                 setErrorMsg(null);
+                setSuccessMsg(null);
               }}
               className={`flex-1 pb-3 text-center text-sm font-semibold border-b-2 transition-all ${
                 isLogin ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-400 hover:text-slate-600'
@@ -101,6 +111,7 @@ export const LoginPage: React.FC = () => {
               onClick={() => {
                 setIsLogin(false);
                 setErrorMsg(null);
+                setSuccessMsg(null);
               }}
               className={`flex-1 pb-3 text-center text-sm font-semibold border-b-2 transition-all ${
                 !isLogin ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-400 hover:text-slate-600'
@@ -109,6 +120,16 @@ export const LoginPage: React.FC = () => {
               Create Account
             </button>
           </div>
+
+          {successMsg && (
+            <Alert
+              message={successMsg}
+              type="success"
+              showIcon
+              icon={<CheckCircle2 className="w-4 h-4 text-emerald-600" />}
+              className="mb-5 rounded-lg text-xs"
+            />
+          )}
 
           {errorMsg && (
             <Alert message={errorMsg} type="error" showIcon className="mb-5 rounded-lg text-xs" />

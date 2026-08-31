@@ -1,5 +1,5 @@
-
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -12,7 +12,16 @@ from app.services import employee_service
 
 router = APIRouter()
 
-@router.get("", response_model=PaginatedEmployeeResponse, summary="Get paginated list of employees with multi-facet filters")
+
+class BulkDeleteRequest(BaseModel):
+    employee_ids: list[str]
+
+
+@router.get(
+    "",
+    response_model=PaginatedEmployeeResponse,
+    summary="Get paginated list of employees with multi-facet filters",
+)
 def list_employees(
     page: int = Query(1, ge=1, description="Page number"),
     page_size: int = Query(25, ge=1, le=200, description="Items per page"),
@@ -23,10 +32,12 @@ def list_employees(
     gender: str | None = Query(None, description="Filter by gender"),
     min_salary_usd: float | None = Query(None, description="Minimum base salary in USD"),
     max_salary_usd: float | None = Query(None, description="Maximum base salary in USD"),
-    band_status: str | None = Query(None, description="Filter by band status: UNDERPAID, OVERPAID, WITHIN_BAND"),
+    band_status: str | None = Query(
+        None, description="Filter by band status: UNDERPAID, OVERPAID, WITHIN_BAND"
+    ),
     sort_by: str = Query("created_at", description="Sort field"),
-    sort_order: str = Query("desc", regex="^(asc|desc)$", description="Sort order: asc or desc"),
-    db: Session = Depends(get_db)
+    sort_order: str = Query("desc", pattern="^(asc|desc)$", description="Sort order: asc or desc"),
+    db: Session = Depends(get_db),
 ):
     return employee_service.get_employees(
         db=db,
@@ -41,16 +52,51 @@ def list_employees(
         max_salary_usd=max_salary_usd,
         band_status=band_status,
         sort_by=sort_by,
-        sort_order=sort_order
+        sort_order=sort_order,
     )
 
-@router.get("/{employee_id}", response_model=EmployeeDetail, summary="Get full employee profile with salary and audit history")
+
+@router.post(
+    "/bulk-delete",
+    summary="Bulk delete multiple employees by ID",
+)
+def bulk_delete_employees(data: BulkDeleteRequest, db: Session = Depends(get_db)):
+    deleted_count = employee_service.bulk_delete_employees(db, data.employee_ids)
+    return {"status": "success", "deleted_count": deleted_count}
+
+
+@router.get(
+    "/{employee_id}",
+    response_model=EmployeeDetail,
+    summary="Get full employee profile with salary and audit history",
+)
 def get_employee(employee_id: str, db: Session = Depends(get_db)):
     emp = employee_service.get_employee_by_id(db, employee_id)
     if not emp:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Employee '{employee_id}' not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Employee '{employee_id}' not found"
+        )
     return emp
 
-@router.post("", response_model=EmployeeDetail, status_code=status.HTTP_201_CREATED, summary="Create a new employee with initial compensation")
+
+@router.delete(
+    "/{employee_id}",
+    summary="Delete single employee record by ID",
+)
+def delete_employee(employee_id: str, db: Session = Depends(get_db)):
+    success = employee_service.delete_employee(db, employee_id)
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Employee '{employee_id}' not found"
+        )
+    return {"status": "success", "message": f"Employee {employee_id} deleted successfully"}
+
+
+@router.post(
+    "",
+    response_model=EmployeeDetail,
+    status_code=status.HTTP_201_CREATED,
+    summary="Create a new employee with initial compensation",
+)
 def create_employee(data: EmployeeCreate, db: Session = Depends(get_db)):
     return employee_service.create_employee(db, data)

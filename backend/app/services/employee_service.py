@@ -31,7 +31,7 @@ def get_employees(
     max_salary_usd: float | None = None,
     band_status: str | None = None,
     sort_by: str = "created_at",
-    sort_order: str = "desc"
+    sort_order: str = "desc",
 ) -> PaginatedEmployeeResponse:
     page = max(1, page)
     page_size = min(max(1, page_size), 200)
@@ -48,7 +48,7 @@ def get_employees(
         min_salary_usd=min_salary_usd,
         max_salary_usd=max_salary_usd,
         sort_by=sort_by,
-        sort_order=sort_order
+        sort_order=sort_order,
     )
 
     total_pages = math.ceil(total / page_size) if total > 0 else 1
@@ -89,17 +89,14 @@ def get_employees(
                 currency=sal.currency,
                 base_salary_usd=round(sal.base_salary_usd, 2),
                 total_compensation_usd=round(sal.total_compensation_usd, 2),
-                band_status=status
+                band_status=status,
             )
         )
 
     return PaginatedEmployeeResponse(
-        items=items,
-        total=total,
-        page=page,
-        page_size=page_size,
-        total_pages=total_pages
+        items=items, total=total, page=page, page_size=page_size, total_pages=total_pages
     )
+
 
 def get_employee_by_id(db: Session, employee_id: str) -> EmployeeDetail | None:
     emp_repo = EmployeeRepository(db)
@@ -148,8 +145,9 @@ def get_employee_by_id(db: Session, employee_id: str) -> EmployeeDetail | None:
         band_status=band_status,
         band_min_usd=min_band,
         band_mid_usd=mid_band,
-        band_max_usd=max_band
+        band_max_usd=max_band,
     )
+
 
 def create_employee(db: Session, data: EmployeeCreate) -> EmployeeDetail:
     emp_repo = EmployeeRepository(db)
@@ -180,7 +178,9 @@ def create_employee(db: Session, data: EmployeeCreate) -> EmployeeDetail:
     db.flush()
 
     rate_row = sal_repo.get_exchange_rate(data.initial_salary.currency)
-    rate = rate_row.rate_to_usd if rate_row else COUNTRIES_DATA.get(data.country, {}).get("rate", 1.0)
+    rate = (
+        rate_row.rate_to_usd if rate_row else COUNTRIES_DATA.get(data.country, {}).get("rate", 1.0)
+    )
 
     base_usd = round(data.initial_salary.base_salary * rate, 2)
     bonus_usd = round(base_usd * (data.initial_salary.bonus_percentage / 100.0), 2)
@@ -198,7 +198,7 @@ def create_employee(db: Session, data: EmployeeCreate) -> EmployeeDetail:
         bonus_usd=bonus_usd,
         total_compensation_usd=total_comp_usd,
         effective_date=data.initial_salary.effective_date,
-        is_current=True
+        is_current=True,
     )
     sal_repo.add(sal)
 
@@ -213,10 +213,20 @@ def create_employee(db: Session, data: EmployeeCreate) -> EmployeeDetail:
         change_percentage=100.0,
         reason="Initial onboarding compensation package",
         notes=None,
-        changed_by="HR Manager"
+        changed_by="HR Manager",
     )
     audit_repo.add(audit)
     db.commit()
     db.refresh(emp)
 
     return get_employee_by_id(db, emp.id)
+
+
+def delete_employee(db: Session, employee_id: str) -> bool:
+    emp_repo = EmployeeRepository(db)
+    return emp_repo.delete(employee_id)
+
+
+def bulk_delete_employees(db: Session, employee_ids: list[str]) -> int:
+    emp_repo = EmployeeRepository(db)
+    return emp_repo.bulk_delete(employee_ids)

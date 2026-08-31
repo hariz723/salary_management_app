@@ -9,6 +9,7 @@ from app.services.metadata_service import get_static_metadata
 
 router = APIRouter()
 
+
 @router.get("", response_model=MetadataResponse, summary="Get application reference metadata")
 def get_metadata(db: Session = Depends(get_db)):
     static_data = get_static_metadata()
@@ -24,5 +25,5 @@ def get_metadata(db: Session = Depends(get_db)):
         job_levels=static_data["job_levels"],
         job_titles_by_department=static_data["job_titles_by_department"],
         currencies=[ExchangeRateOut.model_validate(c) for c in currencies],
-        salary_bands=[SalaryBandOut.model_validate(b) for b in bands]
+        salary_bands=[SalaryBandOut.model_validate(b) for b in bands],
     )

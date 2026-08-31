@@ -46,10 +46,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signup = async (payload: { email: string; password: string; full_name: string; role?: string }) => {
-    const res = await apiSignup(payload);
-    localStorage.setItem('acme_auth_token', res.access_token);
-    setToken(res.access_token);
-    setUser(res.user);
+    // Only register the user account in database without auto-logging in
+    await apiSignup(payload);
   };
 
   const logout = () => {
@@ -65,7 +63,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 };
 
-export const useAuth = () => {
+export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');

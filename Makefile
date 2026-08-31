@@ -1,4 +1,4 @@
-.PHONY: help setup setup-local up up-d down down-v logs logs-backend logs-frontend logs-db restart ps test test-docker lint lint-backend lint-frontend lint-docker format migrate migrate-generate migrate-downgrade migrate-docker clean
+.PHONY: help setup setup-local up up-d down down-v logs logs-backend logs-frontend logs-db restart ps test test-docker lint lint-backend lint-frontend lint-docker format migrate migrate-generate migrate-downgrade clean
 
 .DEFAULT_GOAL := help
 
@@ -11,15 +11,15 @@ help:
 	@echo "Local Environment Setup:"
 	@echo "  setup-local        Install backend & frontend dependencies, copy .env, and seed DB"
 	@echo ""
-	@echo "Database Migrations (Alembic):"
+	@echo "Database Migrations (Alembic via Docker):"
 	@echo "  migrate            Apply all pending migrations (alembic upgrade head)"
 	@echo "  migrate-generate   Generate a new migration (usage: make migrate-generate m='msg')"
 	@echo "  migrate-downgrade  Roll back the latest migration (alembic downgrade -1)"
-	@echo "  migrate-docker     Apply migrations inside the running backend container"
 	@echo ""
 	@echo "Docker Compose Commands:"
 	@echo "  up                 Build and start all services (Postgres + Backend + Frontend)"
 	@echo "  up-d               Build and start all services in detached (background) mode"
+	@echo "  run                run all existing containers in the foreground (no build)"
 	@echo "  down               Stop all running containers"
 	@echo "  down-v             Stop all containers and delete database volume (fresh start)"
 	@echo "  logs               Tail logs for all containers"
@@ -58,22 +58,22 @@ setup-local:
 	@echo "  - Or Local mode: uvicorn app.main:app --app-dir backend --reload (backend) & cd frontend && npm run dev (frontend)"
 
 migrate:
-	cd backend && alembic upgrade head
+	docker compose exec backend alembic upgrade head
 
 migrate-generate:
-	cd backend && alembic revision --autogenerate -m "$(or $(m),auto_migration)"
+	docker compose exec backend alembic revision --autogenerate -m "$(or $(m),auto_migration)"
 
 migrate-downgrade:
-	cd backend && alembic downgrade -1
-
-migrate-docker:
-	docker compose exec backend alembic upgrade head
+	docker compose exec backend alembic downgrade -1
 
 up:
 	docker compose up --build
 
 up-d:
 	docker compose up -d --build
+
+run:
+	docker compose up
 
 down:
 	docker compose down

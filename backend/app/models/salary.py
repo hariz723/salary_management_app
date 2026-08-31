@@ -11,7 +11,9 @@ class SalaryRecord(Base):
     __tablename__ = "salary_records"
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    employee_id = Column(String(36), ForeignKey("employees.id", ondelete="CASCADE"), nullable=False, index=True)
+    employee_id = Column(
+        String(36), ForeignKey("employees.id", ondelete="CASCADE"), nullable=False, index=True
+    )
     base_salary = Column(Float, nullable=False)
     bonus_percentage = Column(Float, default=0.0)
     equity_usd = Column(Float, default=0.0)
@@ -27,9 +29,7 @@ class SalaryRecord(Base):
     # Relationships
     employee = relationship("Employee", back_populates="salaries")
 
-    __table_args__ = (
-        Index("ix_salary_emp_current", "employee_id", "is_current"),
-    )
+    __table_args__ = (Index("ix_salary_emp_current", "employee_id", "is_current"),)
 
 
 class SalaryBand(Base):

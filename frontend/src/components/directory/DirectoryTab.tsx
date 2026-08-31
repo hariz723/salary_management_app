@@ -1,7 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Table, Input, Select, Tag, Space, Tooltip, Pagination, message } from 'antd';
+import { Table, Input, Select, Tag, Space, Tooltip, Pagination, message, Popconfirm } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { getEmployees, getMetadata, exportCsvUrl } from '../../services/api';
+import {
+  getEmployees,
+  getMetadata,
+  exportCsvUrl,
+  deleteEmployee,
+  bulkDeleteEmployees,
+} from '../../services/api';
 import { EmployeeListItem, MetadataResponse } from '../../types';
 import { useCurrency } from '../../context/CurrencyContext';
 import { EmployeeDrawer } from './EmployeeDrawer';
@@ -13,6 +19,7 @@ import {
   Upload,
   Eye,
   Edit3,
+  Trash2,
   RotateCcw,
   Users,
 } from 'lucide-react';
@@ -26,6 +33,8 @@ export const DirectoryTab: React.FC<DirectoryTabProps> = ({ initialFilter }) => 
   const [employees, setEmployees] = useState<EmployeeListItem[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+  const [deleting, setDeleting] = useState(false);
 
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
@@ -85,6 +94,34 @@ export const DirectoryTab: React.FC<DirectoryTabProps> = ({ initialFilter }) => 
     setGender(undefined);
     setBandStatus(undefined);
     setPage(1);
+  };
+
+  const handleDeleteSingle = async (id: string, name: string) => {
+    try {
+      await deleteEmployee(id);
+      message.success(`Deleted employee ${name}`);
+      setSelectedRowKeys((prev) => prev.filter((k) => k !== id));
+      fetchEmployees();
+    } catch (err: any) {
+      const msg = err.response?.data?.detail || err.message || 'Failed to delete employee';
+      message.error(msg);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedRowKeys.length === 0) return;
+    setDeleting(true);
+    try {
+      const res = await bulkDeleteEmployees(selectedRowKeys as string[]);
+      message.success(`Successfully deleted ${res.deleted_count} employees`);
+      setSelectedRowKeys([]);
+      fetchEmployees();
+    } catch (err: any) {
+      const msg = err.response?.data?.detail || err.message || 'Bulk delete failed';
+      message.error(msg);
+    } finally {
+      setDeleting(false);
+    }
   };
 
   const columns: ColumnsType<EmployeeListItem> = [
@@ -198,6 +235,20 @@ export const DirectoryTab: React.FC<DirectoryTabProps> = ({ initialFilter }) => 
               <Edit3 className="w-4 h-4" />
             </button>
           </Tooltip>
+          <Popconfirm
+            title="Delete Employee"
+            description={`Are you sure you want to permanently delete ${record.full_name}?`}
+            onConfirm={() => handleDeleteSingle(record.id, record.full_name)}
+            okText="Yes, Delete"
+            cancelText="Cancel"
+            okButtonProps={{ danger: true }}
+          >
+            <Tooltip title="Delete Record">
+              <button className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </Tooltip>
+          </Popconfirm>
         </Space>
       ),
     },
@@ -217,11 +268,30 @@ export const DirectoryTab: React.FC<DirectoryTabProps> = ({ initialFilter }) => 
             </Tag>
           </div>
           <p className="text-xs text-slate-500 mt-0.5">
-            Ultra-fast indexed search, multi-facet filtering, and live salary adjustments across 10,000 employees.
+            Indexed search, multi-facet filtering, salary adjustments, and batch deletion.
           </p>
         </div>
 
-        <div className="flex items-center space-x-2 shrink-0">
+        <div className="flex items-center space-x-2 shrink-0 flex-wrap gap-2">
+          {selectedRowKeys.length > 0 && (
+            <Popconfirm
+              title={`Delete ${selectedRowKeys.length} Employees`}
+              description={`Are you sure you want to permanently delete these ${selectedRowKeys.length} selected employee records?`}
+              onConfirm={handleBulkDelete}
+              okText="Yes, Delete All"
+              cancelText="Cancel"
+              okButtonProps={{ danger: true }}
+            >
+              <button
+                disabled={deleting}
+                className="px-3.5 py-2 text-xs font-semibold text-white bg-red-600 hover:bg-red-700 disabled:bg-red-300 rounded-xl shadow-xs transition-all flex items-center space-x-1.5"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Delete Selected ({selectedRowKeys.length})</span>
+              </button>
+            </Popconfirm>
+          )}
+
           <a
             href={exportCsvUrl}
             className="px-3.5 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition-all flex items-center space-x-1.5"
@@ -331,6 +401,11 @@ export const DirectoryTab: React.FC<DirectoryTabProps> = ({ initialFilter }) => 
           loading={loading}
           pagination={false}
           size="middle"
+          scroll={{ x: 850 }}
+          rowSelection={{
+            selectedRowKeys,
+            onChange: (keys) => setSelectedRowKeys(keys),
+          }}
           className="text-xs"
           onChange={(_pagination, _filters, sorter: any) => {
             if (sorter && sorter.field) {
@@ -342,8 +417,16 @@ export const DirectoryTab: React.FC<DirectoryTabProps> = ({ initialFilter }) => 
 
         <div className="p-4 border-t border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-50/50">
           <div className="text-xs text-slate-500">
-            Showing {(page - 1) * pageSize + 1} to {Math.min(page * pageSize, total)} of{' '}
-            <span className="font-bold text-slate-800">{total.toLocaleString()}</span> employees
+            {selectedRowKeys.length > 0 ? (
+              <span className="font-semibold text-blue-600">
+                {selectedRowKeys.length} employee{selectedRowKeys.length > 1 ? 's' : ''} selected
+              </span>
+            ) : (
+              <span>
+                Showing {(page - 1) * pageSize + 1} to {Math.min(page * pageSize, total)} of{' '}
+                <span className="font-bold text-slate-800">{total.toLocaleString()}</span> employees
+              </span>
+            )}
           </div>
 
           <Pagination

@@ -23,6 +23,7 @@ def test_employee_repository(seeded_db):
     assert emp_by_id is not None
     assert emp_by_id.email == first_emp.email
 
+
 def test_salary_repository(seeded_db):
     emp_repo = EmployeeRepository(seeded_db)
     sal_repo = SalaryRepository(seeded_db)
@@ -37,6 +38,7 @@ def test_salary_repository(seeded_db):
     rates = sal_repo.get_all_exchange_rates()
     assert len(rates) == 8
 
+
 def test_audit_log_repository(seeded_db):
     emp_repo = EmployeeRepository(seeded_db)
     audit_repo = AuditLogRepository(seeded_db)
@@ -46,7 +48,8 @@ def test_audit_log_repository(seeded_db):
 
     logs = audit_repo.get_by_employee_id(emp.id)
     assert len(logs) >= 1
-    assert logs[0].change_type in ["INITIAL_SEED", "INITIAL_HIRE", "ADJUSTMENT"]
+    assert logs[0].change_type in ["INITIAL_SEED", "INITIAL_HIRE", "ADJUSTMENT", "CSV_IMPORT"]
+
 
 def test_analytics_repository(seeded_db):
     analytics_repo = AnalyticsRepository(seeded_db)

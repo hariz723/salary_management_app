@@ -1,5 +1,5 @@
 services:
-  # 1. PostgreSQL Relational Database
+  
   db:
     image: postgres:16-alpine
     container_name: acme_salary_db
@@ -20,7 +20,6 @@ services:
       timeout: 5s
       retries: 5
 
-  # 2. FastAPI Backend API
   backend:
     build:
       context: ./backend
@@ -33,13 +32,16 @@ services:
       DATABASE_URL: ${DATABASE_URL}
       PROJECT_NAME: ${PROJECT_NAME}
       SECRET_KEY: ${SECRET_KEY}
+      BACKEND_RELOAD: "true"
+      WATCHFILES_FORCE_POLLING: "true"
     ports:
       - "${BACKEND_PORT:-8000}:8000"
+    volumes:
+      - ./backend:/app
     depends_on:
       db:
         condition: service_healthy
 
-  # 3. React / Vite Frontend
   frontend:
     build:
       context: ./frontend
@@ -51,11 +53,17 @@ services:
     environment:
       BACKEND_URL: ${BACKEND_URL}
       VITE_BACKEND_URL: ${VITE_BACKEND_URL}
+      CHOKIDAR_USEPOLLING: "true"
     ports:
       - "${FRONTEND_PORT:-5173}:5173"
+    volumes:
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
     depends_on:
       - backend
 
 volumes:
   postgres_data:
+    driver: local
+  frontend_node_modules:
     driver: local
