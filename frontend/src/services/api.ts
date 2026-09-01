@@ -12,7 +12,8 @@ import {
   BandComplianceSummary,
   HRQuestionCard,
   MetadataResponse,
-  User
+  User,
+  ChatbotResponse,
 } from '../types';
 
 const API_BASE = '/api/v1';
@@ -195,3 +196,10 @@ export const importCsv = async (file: File): Promise<{
   });
   return res.data;
 };
+
+// Chatbot Query API
+export const queryChatbot = async (message: string): Promise<ChatbotResponse> => {
+  const res = await apiClient.post<ChatbotResponse>('/chatbot/query', { message });
+  return res.data;
+};
+

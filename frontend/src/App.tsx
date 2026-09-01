@@ -7,6 +7,7 @@ import { OverviewTab } from './components/dashboard/OverviewTab';
 import { DirectoryTab } from './components/directory/DirectoryTab';
 import { InsightsTab } from './components/analytics/InsightsTab';
 import { PayParityTab } from './components/analytics/PayParityTab';
+import { CompensationChatbot } from './components/chatbot/CompensationChatbot';
 import { ThemeProvider, CssBaseline, CircularProgress, Box } from '@mui/material';
 import { muiTheme } from './theme/theme';
 
@@ -59,6 +60,7 @@ const MainLayout: React.FC = () => {
         {activeTab === 'insights' && <InsightsTab />}
         {activeTab === 'parity' && <PayParityTab />}
       </Box>
+      <CompensationChatbot />
     </Box>
   );
 };

@@ -49,6 +49,14 @@ An enterprise-grade compensation intelligence and salary management platform bui
 
 ---
 
+### 5. 🤖 Natural Language AI Compensation Chatbot (Powered by Hugging Face 🤗)
+* **Floating Intelligence Widget**: Globally accessible across all views via the bottom-right floating action button.
+* **Natural Language Queries Grounded in Live Data**: Ask questions in plain English about workforce headcount, global salaries, department payrolls, salary band outliers, top earners, or gender pay parity.
+* **Rich Data Responses**: Automatically renders responses with KPI metric cards, structured data tables, employee profile badges, and 1-click follow-up suggestion chips.
+* **Hugging Face Inference Integration**: Uses Hugging Face Chat Completions (`HUGGINGFACE_API_TOKEN` / `HF_TOKEN` with models like `Qwen/Qwen2.5-7B-Instruct-1M` or `meta-llama/Llama-3.2-3B-Instruct`) backed by an instant database analytics fallback engine.
+
+---
+
 ## 🚀 Quick Start Guide
 
 You can run the entire platform (PostgreSQL Database + FastAPI Backend + React/Vite Material-UI Frontend) using either **Makefile commands**, **Native Docker Compose**, or **Local Development**.
@@ -131,6 +139,9 @@ For developers running Python and Node directly on their local machine:
 # 1. Copy environment template
 cp .env.example .env
 
+# Optional: enable Hugging Face-generated chatbot answers
+# Add your Hugging Face token to .env as HF_TOKEN=hf_...
+
 # 2. Install backend dependencies
 pip install -r backend/requirements.txt
 
@@ -146,6 +157,8 @@ uvicorn app.main:app --app-dir backend --host 127.0.0.1 --port 8000 --reload
 # 6. In a separate terminal, start React/Vite frontend (Port 5173)
 cd frontend && npm run dev
 ```
+
+The compensation chatbot always queries the application database first, then uses Hugging Face Inference Providers to phrase the answer when `HF_TOKEN` or `HUGGINGFACE_API_TOKEN` is configured. If no token is present, it falls back to the deterministic database answer.
 
 ---
 

@@ -32,6 +32,10 @@ services:
       DATABASE_URL: ${DATABASE_URL}
       PROJECT_NAME: ${PROJECT_NAME}
       SECRET_KEY: ${SECRET_KEY}
+      HF_TOKEN: ${HF_TOKEN:-}
+      HUGGINGFACE_MODEL: ${HUGGINGFACE_MODEL:-Qwen/Qwen2.5-7B-Instruct-1M:fastest}
+      HUGGINGFACE_API_URL: ${HUGGINGFACE_API_URL:-https://router.huggingface.co/v1/chat/completions}
+      HUGGINGFACE_TIMEOUT_SECONDS: ${HUGGINGFACE_TIMEOUT_SECONDS:-20}
       BACKEND_RELOAD: "true"
       WATCHFILES_FORCE_POLLING: "true"
     ports:

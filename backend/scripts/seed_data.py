@@ -192,7 +192,7 @@ EQUITY_RANGES = {
 }
 
 
-def generate_employees(db, total_count=1000):
+def generate_employees(db, total_count=10000):
     if db.query(Employee).count() >= total_count:
         logger.info(
             f"Database already contains {db.query(Employee).count()} employees. Skipping generation."
@@ -371,7 +371,7 @@ def main():
         seed_users(db)
         seed_exchange_rates(db)
         seed_salary_bands(db)
-        generate_employees(db, 1000)
+        generate_employees(db, 10000)
     finally:
         db.close()
 

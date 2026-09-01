@@ -8,6 +8,8 @@ from sqlalchemy.orm import sessionmaker
 
 TEST_DATABASE_URL = "sqlite:///./test_salary_app.db"
 os.environ["DATABASE_URL"] = TEST_DATABASE_URL
+os.environ["HF_TOKEN"] = ""
+os.environ["HUGGINGFACE_API_TOKEN"] = ""
 
 # Add backend directory to sys.path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))

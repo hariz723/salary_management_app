@@ -272,3 +272,22 @@ export interface ImportCsvResponse {
   imported_count: number;
   errors: ImportCsvError[];
 }
+
+export interface ChatbotResponse {
+  answer: string;
+  category: string;
+  data_type: 'text' | 'kpi' | 'table' | 'employee';
+  data?: any;
+  suggestions: string[];
+}
+
+export interface ChatMessage {
+  id: string;
+  sender: 'user' | 'bot';
+  text: string;
+  timestamp: string;
+  category?: string;
+  dataType?: 'text' | 'kpi' | 'table' | 'employee';
+  data?: any;
+  suggestions?: string[];
+}
