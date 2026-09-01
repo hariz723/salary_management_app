@@ -1,8 +1,14 @@
 # 💰 Global Salary Management System
 
-An enterprise-grade compensation intelligence and salary management platform built for **HR Leadership & Executives** to manage, analyze, govern, and adjust compensation data across **8 global countries and currencies** with sub-50ms query responsiveness.
+An enterprise-grade compensation intelligence and salary management platform built for **HR Leadership & Executives** to manage, analyze, govern, and adjust compensation data across **8 global countries and currencies** with sub-50ms query responsiveness and an embedded **Hugging Face AI Assistant**.
 
 ![Executive Overview](docs/screenshots/executive_overview.png)
+
+---
+
+## 🎥 Demo Video
+
+Watch the product demo: [Global Salary Management System Demo](https://www.loom.com/share/9c3ede54794f48dd8ce6853400fae43e)
 
 ---
 
@@ -50,10 +56,60 @@ An enterprise-grade compensation intelligence and salary management platform bui
 ---
 
 ### 5. 🤖 Natural Language AI Compensation Chatbot (Powered by Hugging Face 🤗)
-* **Floating Intelligence Widget**: Globally accessible across all views via the bottom-right floating action button.
-* **Natural Language Queries Grounded in Live Data**: Ask questions in plain English about workforce headcount, global salaries, department payrolls, salary band outliers, top earners, or gender pay parity.
-* **Rich Data Responses**: Automatically renders responses with KPI metric cards, structured data tables, employee profile badges, and 1-click follow-up suggestion chips.
-* **Hugging Face Inference Integration**: Uses Hugging Face Chat Completions (`HUGGINGFACE_API_TOKEN` / `HF_TOKEN` with models like `Qwen/Qwen2.5-7B-Instruct-1M` or `meta-llama/Llama-3.2-3B-Instruct`) backed by an instant database analytics fallback engine.
+
+A conversational AI assistant embedded directly into the UI to allow HR managers and leadership to query workforce and compensation data in plain English with sub-15ms response times.
+
+* **Floating Intelligence Widget**: Accessible across all views via the bottom-right floating action button with online status indicator, chat reset, and minimize controls.
+* **Database-Grounded RAG Architecture**: Answers are computed directly against the live PostgreSQL database facts (headcount, payroll spend, department allocations, outlier deviations, parity ratios) before passing context to Hugging Face models, eliminating hallucinations.
+* **Rich Multi-Modal UI Responses**:
+  * 📊 **KPI Metric Cards**: Key statistics rendered in structured grid cards (Headcount, Total Spend, Mean/Median Base Pay, Compliance Rate).
+  * 📋 **Data Tables**: Paginated, sortable mini-tables for multi-row data (Top 5 Earners, Department Comparisons, Currency FX Rates).
+  * 👤 **Employee Spotlight Badges**: Instant lookup cards showing job title, department, location, local salary, bonus %, and band status.
+  * 💡 **1-Click Suggestion Chips**: Dynamic follow-up question chips rendered below every response for rapid interactive data exploration.
+* **Dual-Engine Architecture (Hugging Face + Local Fallback)**:
+  * **Hugging Face Inference API**: Connects to serverless chat models (`Qwen/Qwen2.5-7B-Instruct-1M`, `meta-llama/Llama-3.2-3B-Instruct`, etc.) via `https://router.huggingface.co/v1/chat/completions`.
+  * **Built-In Deterministic Fallback**: If no Hugging Face token is provided or network is offline, the platform's analytical engine answers immediately with 100% uptime.
+
+#### 💬 Sample Questions You Can Ask:
+| Category | Example Question |
+| :--- | :--- |
+| **Workforce Overview** | *"What is the total annual payroll and active headcount?"* |
+| **Top Earners** | *"Who are the top 5 highest earners globally?"* / *"Who is the lowest paid employee?"* |
+| **Department Stats** | *"What is the average base salary and bonus in Engineering?"* |
+| **Regional Pay** | *"How many employees are in Germany?"* / *"What is the total spend in India?"* |
+| **Pay Equity & Parity** | *"What is the gender pay parity ratio across departments?"* |
+| **Band Compliance** | *"How many employees are underpaid?"* / *"What is the budget to fix band outliers?"* |
+| **Talent Lookup** | *"Who is Scott Oneill?"* / *"Search employee EMP-00001"* |
+| **Currencies & FX** | *"What are the supported currencies and exchange rates to USD?"* |
+
+#### ⚙️ Hugging Face Configuration (`.env`):
+```env
+# Optional: Add your free token from https://huggingface.co/settings/tokens
+HF_TOKEN=hf_your_token_here
+HUGGINGFACE_MODEL=Qwen/Qwen2.5-7B-Instruct-1M:fastest
+HUGGINGFACE_API_URL=https://router.huggingface.co/v1/chat/completions
+HUGGINGFACE_TIMEOUT_SECONDS=20
+```
+
+#### 🔌 Chatbot API Endpoint:
+* `POST /api/v1/chatbot/query`
+* **Request**: `{"message": "Who are the top 5 highest earners?"}`
+* **Response**:
+```json
+{
+  "answer": "The highest compensated individual is Scott Oneill...",
+  "category": "Top Earners",
+  "data_type": "table",
+  "data": {
+    "headers": ["Employee", "Title", "Department", "Country", "Total Comp (USD)"],
+    "rows": [...]
+  },
+  "suggestions": [
+    "What is the average salary in Engineering?",
+    "How many employees are underpaid?"
+  ]
+}
+```
 
 ---
 
